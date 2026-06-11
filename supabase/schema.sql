@@ -111,7 +111,8 @@ create table venues (
   id uuid primary key default gen_random_uuid(),
   event_id uuid references events not null,
   name text not null,
-  capacity int
+  capacity int,
+  location_url text
 );
 
 -- Venue Check-ins

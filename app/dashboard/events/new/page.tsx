@@ -16,7 +16,8 @@ import {
   Plus, 
   Loader2 
 } from "lucide-react";
-import { createEvent, TicketInput, FormFieldInput } from "./actions";
+import { createEvent, getRecentVenues, TicketInput, FormFieldInput } from "./actions";
+import { useEffect } from "react";
 
 const steps = [
   { label: "Basic Info", icon: Calendar },
@@ -39,6 +40,8 @@ export default function NewEventPage() {
   const [mapLink, setMapLink] = useState("");
   const [isOnline, setIsOnline] = useState(false);
   const [maxCapacity, setMaxCapacity] = useState<number | "">("");
+  
+  const [recentVenues, setRecentVenues] = useState<string[]>([]);
 
   // Step 1: Ticket Types
   const [tickets, setTickets] = useState<TicketInput[]>([
@@ -47,6 +50,20 @@ export default function NewEventPage() {
 
   // Step 2: Custom Registration Fields
   const [customFields, setCustomFields] = useState<FormFieldInput[]>([]);
+
+  useEffect(() => {
+    async function loadVenues() {
+      try {
+        const res = await getRecentVenues();
+        if (res.success && res.venues) {
+          setRecentVenues(res.venues);
+        }
+      } catch (err) {
+        console.error("Failed to load recent venues", err);
+      }
+    }
+    loadVenues();
+  }, []);
 
   // Helpers for Ticket management
   const addTicketType = () => {
@@ -268,7 +285,13 @@ export default function NewEventPage() {
                       onChange={(e) => setVenue(e.target.value)}
                       placeholder="e.g. BKC Convention Centre, Mumbai" 
                       className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl h-11" 
+                      list="venue-suggestions"
                     />
+                    <datalist id="venue-suggestions">
+                      {recentVenues.map((v, idx) => (
+                        <option key={idx} value={v} />
+                      ))}
+                    </datalist>
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Google Maps Location Link (URL or Embed Share Link)</label>

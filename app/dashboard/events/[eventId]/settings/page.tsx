@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Save, Trash2, Archive, Upload, Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { getRecentVenues } from "@/app/dashboard/events/new/actions";
 
 export default function SettingsPage() {
   const params = useParams();
@@ -19,6 +20,8 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ticketDesignRef = useRef<string | null>(null);
+  
+  const [recentVenues, setRecentVenues] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchEvent() {
@@ -59,7 +62,20 @@ export default function SettingsPage() {
       }
       setLoading(false);
     }
+    
+    async function fetchVenues() {
+      try {
+        const res = await getRecentVenues();
+        if (res.success && res.venues) {
+          setRecentVenues(res.venues);
+        }
+      } catch (err) {
+        console.error("Failed to load venues", err);
+      }
+    }
+
     fetchEvent();
+    fetchVenues();
   }, [eventId]);
 
   const handleChange = (field: string, value: any) => {
@@ -179,7 +195,13 @@ export default function SettingsPage() {
                 onChange={(e) => handleChange("venue", e.target.value)}
                 placeholder="e.g. Grand Convention Center"
                 className="bg-black/5 border-black/5 text-slate-900 rounded-xl" 
+                list="settings-venue-suggestions"
               />
+              <datalist id="settings-venue-suggestions">
+                {recentVenues.map((v, idx) => (
+                  <option key={idx} value={v} />
+                ))}
+              </datalist>
             </div>
             <div>
               <label className="text-sm text-slate-600 mb-1.5 block">Google Maps Link</label>

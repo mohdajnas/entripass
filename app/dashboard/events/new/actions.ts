@@ -105,7 +105,7 @@ export async function createEvent(input: CreateEventInput) {
       start_time: input.startTime ? new Date(input.startTime).toISOString() : null,
       end_time: input.endTime ? new Date(input.endTime).toISOString() : null,
       venue: input.venue || null,
-      map_link: input.mapLink || null,
+      location_url: input.mapLink || null,
       is_online: input.isOnline,
       max_capacity: input.maxCapacity || null,
       status: "published", // Default to published for convenience
@@ -181,6 +181,70 @@ export async function createEvent(input: CreateEventInput) {
     return { success: false, error: `Form fields creation failed: ${formFieldsError.message}` };
   }
 
+  // 6. Insert primary venue into venues table for check-ins
+  if (!input.isOnline && input.venue) {
+    const { error: venueError } = await supabase
+      .from("venues")
+      .insert({
+        event_id: eventId,
+        name: input.venue,
+        capacity: input.maxCapacity || null,
+        location_url: input.mapLink || null,
+      });
+
+    if (venueError) {
+      console.error("Failed to add primary venue to venues table:", venueError);
+      // Non-fatal, so we just log it
+    }
+  }
+
   revalidatePath("/dashboard");
   return { success: true, eventId };
 }
+
+export async function getRecentVenues() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, venues: [] };
+
+  // Get user's orgs
+  const { data: orgs } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("owner_id", user.id);
+
+  if (!orgs || orgs.length === 0) return { success: true, venues: [] };
+
+  const orgIds = orgs.map(o => o.id);
+
+  // Get events in these orgs
+  const { data: events } = await supabase
+    .from("events")
+    .select("id, venue")
+    .in("org_id", orgIds);
+
+  const eventIds = events?.map(e => e.id) || [];
+  const eventVenues = events?.map(e => e.venue).filter(v => Boolean(v)) as string[] || [];
+
+  let subVenues: string[] = [];
+  if (eventIds.length > 0) {
+    const { data: venuesTable } = await supabase
+      .from("venues")
+      .select("name")
+      .in("event_id", eventIds);
+    
+    if (venuesTable) {
+      subVenues = venuesTable.map(v => v.name);
+    }
+  }
+
+  // Deduplicate
+  const uniqueVenues = Array.from(new Set([...eventVenues, ...subVenues]));
+
+  return { success: true, venues: uniqueVenues };
+}
+
