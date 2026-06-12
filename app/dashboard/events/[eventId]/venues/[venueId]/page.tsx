@@ -53,7 +53,7 @@ export default function VenuePreviewPage() {
       const res = await getVenueDetails(venueId);
       if (res.success) {
         setVenue(res.venue);
-        setCheckins(res.checkins);
+        setCheckins(res.checkins || []);
       } else {
         toast.error(res.error || "Failed to load venue details");
       }

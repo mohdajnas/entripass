@@ -42,8 +42,8 @@ export default function VenuesPage() {
       if (isMock) {
         // Just mock some basic venues
         setVenues([
-          { id: "mock-1", event_id: eventId, name: "Main Hall", capacity: 500, checked_in: 0, total_registrations: 150 },
-          { id: "mock-2", event_id: eventId, name: "Workshop Room A", capacity: 50, checked_in: 0, total_registrations: 150 },
+          { id: "mock-1", event_id: eventId, name: "Main Hall", capacity: 500, checked_in: 0, total_registrations: 150, location_url: null },
+          { id: "mock-2", event_id: eventId, name: "Workshop Room A", capacity: 50, checked_in: 0, total_registrations: 150, location_url: null },
         ]);
         return;
       }
