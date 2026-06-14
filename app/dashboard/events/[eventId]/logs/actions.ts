@@ -2,8 +2,13 @@
 
 import { createClient } from "@/utils/supabase/server";
 
-export async function getMessageLogs(eventId: string) {
+export async function getMessageLogs(eventId: string, searchParams: any = {}) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   const { data, error } = await supabase
     .from("message_logs")

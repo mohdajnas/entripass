@@ -4,6 +4,11 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function getPostEventData(eventId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   // Get checked-in guests count
   const { count: checkedInCount } = await supabase
@@ -47,6 +52,11 @@ export async function getPostEventData(eventId: string) {
 
 export async function downloadAttendanceCsv(eventId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
   
   const { data: guests, error } = await supabase
     .from("guests")

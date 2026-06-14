@@ -4,6 +4,11 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function getLiveInsights(eventId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   // 1. Fetch Guests for Registration Data
   const { data: guests } = await supabase

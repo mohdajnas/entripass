@@ -9,6 +9,11 @@ export interface InventoryInput {
 
 export async function createInventoryItem(eventId: string, data: InventoryInput) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   const { error } = await supabase
     .from("inventory_items")
@@ -28,6 +33,11 @@ export async function createInventoryItem(eventId: string, data: InventoryInput)
 
 export async function updateInventoryItem(itemId: string, data: InventoryInput) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   const { error } = await supabase
     .from("inventory_items")
@@ -46,6 +56,11 @@ export async function updateInventoryItem(itemId: string, data: InventoryInput) 
 
 export async function deleteInventoryItem(itemId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   // First verify if any claims exist
   const { count } = await supabase

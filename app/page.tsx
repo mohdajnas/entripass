@@ -3,7 +3,7 @@ import { Sparkles, ArrowRight, Calendar, Users, QrCode, Shield } from "lucide-re
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Navigation */}
       <header className="sticky top-0 z-50 border-b border-black/[0.08] bg-[rgba(255,255,255,0.6)] backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

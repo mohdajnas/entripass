@@ -20,6 +20,11 @@ export interface TemplateUpdate {
 // Ensure the 5 base templates exist for the event
 export async function getEmailTemplates(eventId: string) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   const { data: existing, error } = await supabase
     .from("email_templates")
@@ -72,12 +77,17 @@ export async function getEmailTemplates(eventId: string) {
   return { success: true, templates: existing };
 }
 
-export async function updateTemplate(templateId: string, data: TemplateUpdate) {
+export async function updateTemplate(templateId: string, updates: TemplateUpdate) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   const { error } = await supabase
     .from("email_templates")
-    .update(data)
+    .update(updates)
     .eq("id", templateId);
 
   if (error) {
@@ -89,6 +99,11 @@ export async function updateTemplate(templateId: string, data: TemplateUpdate) {
 
 export async function updateSmtpSettings(eventId: string, config: SmtpConfig) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
 
   // Update SMTP config on all templates for this event
   const { error } = await supabase
