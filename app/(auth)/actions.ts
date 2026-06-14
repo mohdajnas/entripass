@@ -29,6 +29,11 @@ export async function signup(formData: FormData) {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
   };
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (data.password !== confirmPassword) {
+    return redirect("/register?message=Passwords do not match");
+  }
 
   const { error } = await supabase.auth.signUp(data);
 

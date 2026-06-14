@@ -10,17 +10,28 @@ export default async function LoginPage({
 }) {
   const { message } = await searchParams;
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="min-h-screen flex bg-[#08160c]">
       {/* Left Branding Sidebar */}
-      <div className="hidden lg:flex w-1/2 bg-slate-900 p-12 flex-col justify-between relative overflow-hidden">
+      <div className="hidden lg:flex w-1/2 bg-[#08160c] p-12 flex-col justify-between relative overflow-hidden">
         {/* Background Decorative Elements */}
         <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-emerald-500/30 rounded-full mix-blend-screen filter blur-[100px] opacity-50" />
         <div className="absolute top-1/4 -right-32 w-96 h-96 bg-teal-500/30 rounded-full mix-blend-screen filter blur-[100px] opacity-50" />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
 
         <div className="relative z-10 flex items-center gap-3">
-          <img src="/ticket-branding/BCCKUP.png" alt="EntryPass Logo" className="w-16 h-16 object-contain" />
-          <span className="text-2xl font-bold text-white tracking-tight">EntryPass</span>
+          <div 
+            className="h-12 w-48 bg-white"
+            style={{
+              maskImage: 'url(/ticket-branding/sidebar-new.png)',
+              maskSize: 'contain',
+              maskRepeat: 'no-repeat',
+              maskPosition: 'left center',
+              WebkitMaskImage: 'url(/ticket-branding/sidebar-new.png)',
+              WebkitMaskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'left center'
+            }}
+          />
         </div>
 
         <div className="relative z-10 max-w-md">
@@ -34,7 +45,12 @@ export default async function LoginPage({
           <div className="mt-10 flex items-center gap-4">
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-900 bg-slate-800" />
+                <img 
+                  key={i}
+                  src={`https://i.pravatar.cc/100?img=${i + 10}`}
+                  alt={`Organizer ${i}`}
+                  className="w-10 h-10 rounded-full border-2 border-[#08160c] object-cover bg-white" 
+                />
               ))}
             </div>
             <div className="text-sm">
@@ -46,12 +62,23 @@ export default async function LoginPage({
       </div>
 
       {/* Right Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 bg-white lg:rounded-l-[40px]">
         <div className="w-full max-w-md animate-slide-up">
           {/* Logo for mobile only */}
-          <div className="flex lg:hidden items-center gap-3 mb-10 justify-center">
-            <img src="/ticket-branding/BCCKUP.png" alt="EntryPass Logo" className="w-16 h-16 object-contain" />
-            <span className="text-2xl font-bold text-slate-900 tracking-tight">EntryPass</span>
+          <div className="flex lg:hidden items-center justify-center mb-10">
+            <div 
+              className="h-12 w-48 bg-[#08160c]"
+              style={{
+                maskImage: 'url(/ticket-branding/sidebar-new.png)',
+                maskSize: 'contain',
+                maskRepeat: 'no-repeat',
+                maskPosition: 'center center',
+                WebkitMaskImage: 'url(/ticket-branding/sidebar-new.png)',
+                WebkitMaskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center center'
+              }}
+            />
           </div>
 
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome back</h1>
