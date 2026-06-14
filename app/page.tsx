@@ -39,16 +39,16 @@ export default async function LandingPage() {
             </p>
             
             {/* Search Bar / CTA */}
-            <div className="flex flex-col sm:flex-row items-center w-full max-w-xl gap-2 bg-white p-2 rounded-full shadow-2xl animate-slide-up" style={{ animationDelay: "300ms" }}>
-              <div className="flex-1 flex items-center px-4 w-full">
-                <Search className="w-5 h-5 text-slate-400 mr-3" />
+            <div className="flex flex-col sm:flex-row items-center w-full max-w-xl gap-3 sm:gap-2 bg-white p-3 sm:p-2 rounded-[2rem] sm:rounded-full shadow-2xl animate-slide-up" style={{ animationDelay: "300ms" }}>
+              <div className="flex-1 flex items-center px-4 py-2 sm:py-0 w-full">
+                <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
                 <input 
                   type="text" 
-                  placeholder="Search for artists, events, or venues..." 
-                  className="w-full bg-transparent border-none outline-none text-slate-900 font-medium placeholder:text-slate-400"
+                  placeholder="Search artists, events, or venues..." 
+                  className="w-full bg-transparent border-none outline-none text-slate-900 font-medium placeholder:text-slate-400 truncate"
                 />
               </div>
-              <button className="w-full sm:w-auto bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-[var(--primary-foreground)] px-8 py-3.5 rounded-full font-bold transition-all whitespace-nowrap">
+              <button className="w-full sm:w-auto bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-[var(--primary-foreground)] px-8 py-3.5 rounded-2xl sm:rounded-full font-bold transition-all whitespace-nowrap">
                 Find Tickets
               </button>
             </div>
