@@ -59,6 +59,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE POLICY "Events: Access via owner or team" ON events
   FOR ALL USING (user_can_access_event(id));
 
+-- Allow public users to view events that are marked as public
+CREATE POLICY "Events: Public can view public events" ON events
+  FOR SELECT USING (is_public = true);
+
 -- 4. Apply standard Event-based policies to all child tables
 -- Since all these tables have an `event_id`, we just check if the user can access that event.
 
