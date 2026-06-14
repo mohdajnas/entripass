@@ -36,6 +36,7 @@ import {
   saveTicketDesign,
 } from "./actions";
 import { TICKET_TEMPLATES, TicketTemplate } from "@/lib/ticket-templates";
+import { CanvaConnectPanel } from "@/components/dashboard/CanvaConnectPanel";
 
 interface TicketType {
   id: string;
@@ -1104,6 +1105,16 @@ export default function TicketsPage() {
                     accept="image/*"
                     className="hidden"
                   />
+                  
+                  <CanvaConnectPanel 
+                    eventId={eventId}
+                    onImageExported={(exportUrl) => {
+                      setBgType("image");
+                      setBgValue(exportUrl);
+                      updateImageAspectRatio(exportUrl);
+                    }} 
+                  />
+
                   {designerMode === "canvas" && (bgType === "gradient" || bgType === "color") && (
                     <div className="pt-2">
                       <span className="text-[10px] text-slate-400 block mb-1">Preset Gradient or Custom Color</span>
