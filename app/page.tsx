@@ -1,93 +1,152 @@
 import Link from "next/link";
-import { Sparkles, ArrowRight, Calendar, Users, QrCode, Shield } from "lucide-react";
+import { ArrowDown, Calendar, MapPin, Search } from "lucide-react";
+import { createClient } from "@/utils/supabase/server";
+import { MarketingHeader } from "@/components/marketing/MarketingHeader";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient();
+  const { data: publicEvents } = await supabase
+    .from("events")
+    .select("id, title, description, banner_url, start_time, venue, slug")
+    .eq("is_public", true)
+    .order("start_time", { ascending: true })
+    .limit(8);
+
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 border-b border-black/[0.08] bg-[rgba(255,255,255,0.6)] backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/ticket-branding/BCCKUP.png" alt="EntryPass Logo" className="w-14 h-14 object-contain" />
-            <span className="text-xl font-bold text-slate-900 tracking-tight">EntryPass</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors">
-              Log in
-            </Link>
-            <Link href="/register" className="btn-gradient px-4 py-2 rounded-xl text-sm font-medium">
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col bg-white font-sans text-slate-900 selection:bg-[var(--primary)] selection:text-[var(--primary-foreground)]">
+      <MarketingHeader />
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center pt-24 pb-32 px-6 text-center animate-fade-in relative z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/5 border border-black/5 text-xs font-medium text-slate-700 mb-8 animate-slide-up">
-          <img src="/ticket-branding/BCCKUP.png" alt="EntryPass Icon" className="w-3.5 h-3.5 object-contain" />
-          The next generation of event management
-        </div>
-        <h1 className="text-5xl md:text-7xl font-bold text-slate-900 tracking-tight max-w-4xl mb-6 animate-slide-up" style={{ animationDelay: "100ms" }}>
-          Host unforgettable events with{" "}
-          <span className="gradient-text">absolute confidence.</span>
-        </h1>
-        <p className="text-lg md:text-xl text-slate-500 max-w-2xl mb-10 animate-slide-up" style={{ animationDelay: "200ms" }}>
-          From seamless registration and beautiful landing pages to lightning-fast on-site check-in. Everything you need to manage world-class events in one unified platform.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center gap-4 animate-slide-up" style={{ animationDelay: "300ms" }}>
-          <Link href="/register" className="btn-gradient flex items-center gap-2 px-8 py-4 rounded-xl text-base font-semibold w-full sm:w-auto justify-center">
-            Start for free <ArrowRight className="w-5 h-5" />
-          </Link>
-          <Link href="/dashboard" className="flex items-center gap-2 px-8 py-4 rounded-xl text-base font-semibold bg-black/5 text-slate-900 hover:bg-black/[0.03] border border-black/5 transition-all w-full sm:w-auto justify-center">
-            View Live Demo
-          </Link>
-        </div>
-
-        {/* Feature Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-32 max-w-6xl w-full animate-slide-up" style={{ animationDelay: "400ms" }}>
-          {[
-            { icon: Calendar, title: "Form Builder", desc: "Create beautiful, high-converting registration pages in minutes." },
-            { icon: Users, title: "Guest Management", desc: "Approve, segment, and communicate with your attendees effortlessly." },
-            { icon: QrCode, title: "Lightning Check-in", desc: "Scan QR codes in milliseconds. Keep the lines moving instantly." },
-            { icon: Shield, title: "Bank-grade Security", desc: "Enterprise-level data protection and secure payment processing." },
-          ].map((feature, i) => (
-            <div key={feature.title} className="glass-card p-6 text-left" style={{ animationDelay: `${500 + i * 100}ms` }}>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-black/5 flex items-center justify-center mb-4">
-                <feature.icon className="w-6 h-6 text-emerald-400" />
+      <main className="flex-1 pt-24 pb-20 px-4 md:px-6 max-w-[1400px] mx-auto w-full">
+        <div className="relative w-full h-[70vh] min-h-[500px] max-h-[800px] rounded-[40px] overflow-hidden flex flex-col items-center justify-center text-center p-6 animate-fade-in">
+          {/* Background Image & Overlay */}
+          <img 
+            src="/1.webp" 
+            alt="Hero Banner" 
+            className="absolute inset-0 w-full h-full object-cover scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/60 via-slate-900/60 to-slate-900/90" />
+          
+          {/* Content */}
+          <div className="relative z-10 flex flex-col items-center max-w-4xl">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tighter leading-[1.1] mb-8 animate-slide-up" style={{ animationDelay: "100ms" }}>
+              Your favorite events in <span className="text-[var(--primary)]">one place.</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-white/80 font-medium max-w-2xl mb-12 animate-slide-up" style={{ animationDelay: "200ms" }}>
+              Secure your tickets to the most anticipated concerts, conferences, and festivals happening near you.
+            </p>
+            
+            {/* Search Bar / CTA */}
+            <div className="flex flex-col sm:flex-row items-center w-full max-w-xl gap-2 bg-white p-2 rounded-full shadow-2xl animate-slide-up" style={{ animationDelay: "300ms" }}>
+              <div className="flex-1 flex items-center px-4 w-full">
+                <Search className="w-5 h-5 text-slate-400 mr-3" />
+                <input 
+                  type="text" 
+                  placeholder="Search for artists, events, or venues..." 
+                  className="w-full bg-transparent border-none outline-none text-slate-900 font-medium placeholder:text-slate-400"
+                />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">{feature.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">{feature.desc}</p>
+              <button className="w-full sm:w-auto bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-[var(--primary-foreground)] px-8 py-3.5 rounded-full font-bold transition-all whitespace-nowrap">
+                Find Tickets
+              </button>
             </div>
-          ))}
+          </div>
+          
         </div>
 
-        {/* Social Proof */}
-        <div className="mt-32 max-w-4xl mx-auto border-t border-black/[0.08] pt-16 animate-slide-up" style={{ animationDelay: "800ms" }}>
-          <p className="text-sm text-slate-500 uppercase tracking-widest font-semibold mb-8">Trusted by innovative teams worldwide</p>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-            <div className="text-xl font-bold font-mono">ACME Corp</div>
-            <div className="text-xl font-bold font-serif">Globex</div>
-            <div className="text-xl font-bold tracking-widest">SOYLENT</div>
-            <div className="text-xl font-bold italic">Initech</div>
+        {/* Public Events Section */}
+        {publicEvents && publicEvents.length > 0 && (
+          <div className="mt-24 mb-32 animate-slide-up" style={{ animationDelay: "500ms" }}>
+            <div className="flex items-end justify-between mb-10 px-2">
+              <div>
+                <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Trending Now</h2>
+                <p className="text-lg text-slate-500 font-medium mt-2">Don't miss out on these top picks</p>
+              </div>
+              <button className="hidden md:flex text-[var(--primary)] font-bold hover:text-[var(--primary)]/80 transition-colors items-center gap-1">
+                View all events <ArrowDown className="w-4 h-4 -rotate-90" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
+              {publicEvents.map((event) => (
+                <Link href={`/${event.slug}`} key={event.id} className="group flex flex-col">
+                  {/* Aspect Ratio 3:4 Image */}
+                  <div className="aspect-[3/4] w-full rounded-[24px] overflow-hidden bg-slate-100 mb-5 relative">
+                    {event.banner_url ? (
+                      <img 
+                        src={event.banner_url} 
+                        alt={event.title} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-slate-200" />
+                    )}
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                    <div className="absolute bottom-4 inset-x-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+                      <div className="bg-white text-slate-900 text-center py-3 rounded-full font-bold shadow-xl">
+                        Get Tickets
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Event Details */}
+                  <div className="flex flex-col items-center text-center px-2">
+                    <h3 className="text-lg font-black uppercase tracking-wide text-slate-900 mb-1.5 line-clamp-1">{event.title}</h3>
+                    <div className="flex items-center text-sm font-semibold text-slate-500 gap-2 mb-1">
+                      <Calendar className="w-4 h-4" />
+                      {event.start_time ? new Date(event.start_time).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : "TBA"}
+                    </div>
+                    <div className="flex items-center text-sm font-medium text-slate-400 gap-2 truncate">
+                      <MapPin className="w-4 h-4" />
+                      {event.venue || "TBA"}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            
+            <button className="md:hidden mt-8 w-full text-center text-[var(--primary)] font-bold py-4 bg-[var(--primary)]/10 rounded-full">
+              View all events
+            </button>
+          </div>
+        )}
+
+        {/* CTA Banner */}
+        <div className="w-full bg-slate-900 rounded-[40px] p-12 md:p-24 text-center relative overflow-hidden my-24">
+          <img 
+            src="/2.webp" 
+            alt="Bottom Banner Background" 
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-slate-900/70" />
+          
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-6">Host your next big event with EntryPass.</h2>
+            <p className="text-xl text-slate-300 font-medium mb-10">Get the best ticketing platform for your events. Setup in minutes, sell out in seconds.</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/register" className="bg-[var(--primary)] hover:bg-[var(--primary)]/80 text-[var(--primary-foreground)] px-8 py-4 rounded-full font-bold transition-all w-full sm:w-auto text-lg shadow-xl shadow-[var(--primary)]/30">
+                Start Selling Tickets
+              </Link>
+              <Link href="/pricing" className="bg-white hover:bg-slate-50 text-slate-900 px-8 py-4 rounded-full font-bold transition-all w-full sm:w-auto text-lg">
+                View Pricing
+              </Link>
+            </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-black/[0.08] py-12 text-center text-slate-500 text-sm">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <img src="/ticket-branding/BCCKUP.png" alt="EntryPass Icon" className="w-4 h-4 object-contain grayscale" />
-            <span>© 2025 EntryPass. All rights reserved.</span>
-          </div>
-          <div className="flex gap-6">
-            <Link href="#" className="hover:text-slate-900 transition-colors">Terms</Link>
-            <Link href="#" className="hover:text-slate-900 transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-slate-900 transition-colors">Contact</Link>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
+  );
+}
+
+function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+    </svg>
   );
 }

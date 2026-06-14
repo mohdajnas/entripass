@@ -28,6 +28,7 @@ create table events (
   enable_remote_printing boolean default false,
   checkin_confirmation boolean default true,
   show_speakers boolean default true,
+  is_public boolean default false,
   tags text[],
   created_at timestamptz default now(),
   unique(org_id, slug)

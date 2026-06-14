@@ -335,6 +335,16 @@ export default function SettingsPage() {
             onCheckedChange={(checked) => handleChange("show_speakers", checked)}
           />
         </div>
+        <div className="flex items-center justify-between py-2">
+          <div>
+            <label className="text-sm text-slate-600">Publicly Listed</label>
+            <p className="text-xs text-slate-400 mt-0.5">Display this event on the main landing page</p>
+          </div>
+          <Switch 
+            checked={formData.is_public || false} 
+            onCheckedChange={(checked) => handleChange("is_public", checked)}
+          />
+        </div>
       </div>
 
       <Separator className="bg-black/[0.08]" />
