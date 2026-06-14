@@ -126,6 +126,21 @@ export function GlassSidebar({
           {!collapsed && <span>Profile</span>}
         </Link>
 
+        <Link
+          href="/dashboard/configurations"
+          onClick={() => setMobileMenuOpen(false)}
+          className={cn(
+            "flex items-center gap-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+            collapsed ? "justify-center px-0" : "px-3",
+            pathname === "/dashboard/configurations"
+              ? "bg-[var(--sidebar-accent)] text-white"
+              : "text-white hover:bg-[var(--sidebar-accent)]"
+          )}
+        >
+          <Settings className="w-4 h-4 flex-shrink-0" />
+          {!collapsed && <span>Configurations</span>}
+        </Link>
+
         {eventId && (
           <>
             <div className={cn("px-3 pt-4 pb-2", collapsed && "px-0 text-center")}>

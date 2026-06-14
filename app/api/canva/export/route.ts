@@ -26,8 +26,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         design_id: designId,
         format: {
-          type: "jpg",
-          quality: 80,
+          type: "png",
         },
       }),
     });

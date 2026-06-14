@@ -59,6 +59,15 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE POLICY "Events: Access via owner or team" ON events
   FOR ALL USING (user_can_access_event(id));
 
+-- Allow inserting into events if the user owns the organization
+CREATE POLICY "Events: Owners can insert" ON events
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM organizations o
+      WHERE o.id = org_id AND o.owner_id = auth.uid()
+    )
+  );
+
 -- Allow public users to view events that are marked as public
 CREATE POLICY "Events: Public can view public events" ON events
   FOR SELECT USING (is_public = true);

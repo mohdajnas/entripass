@@ -21,7 +21,12 @@ export async function GET(request: Request) {
   const codeVerifier = cookieStore.get("canva_code_verifier")?.value;
 
   if (!stateDataStr || !codeVerifier) {
-    return NextResponse.json({ error: "Session expired or invalid" }, { status: 400 });
+    return NextResponse.json({ 
+      error: "Session expired or invalid", 
+      details: "Could not find your session cookies. Are you browsing on localhost instead of 127.0.0.1?",
+      hasState: !!stateDataStr,
+      hasVerifier: !!codeVerifier
+    }, { status: 400 });
   }
 
   const stateData = JSON.parse(stateDataStr);
@@ -40,7 +45,6 @@ export async function GET(request: Request) {
     grant_type: "authorization_code",
     code_verifier: codeVerifier,
     code: code,
-    client_id: clientId,
     redirect_uri: redirectUri,
   });
 
@@ -58,7 +62,10 @@ export async function GET(request: Request) {
 
     if (!response.ok) {
       console.error("Failed to exchange token:", data);
-      return NextResponse.json({ error: "Token exchange failed" }, { status: response.status });
+      return NextResponse.json({ 
+        error: "Token exchange failed", 
+        canvaError: data 
+      }, { status: response.status });
     }
 
     // Securely store the access token in an HttpOnly cookie
@@ -84,11 +91,15 @@ export async function GET(request: Request) {
     cookieStore.delete("canva_oauth_state");
 
     // Redirect back to the event tickets page
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+    const actualOrigin = `${protocol}://${host}`;
+
     const eventId = stateData.eventId;
     if (eventId) {
-      return NextResponse.redirect(new URL(`/dashboard/events/${eventId}/tickets`, request.url));
+      return NextResponse.redirect(`${actualOrigin}/dashboard/events/${eventId}/tickets`);
     } else {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(`${actualOrigin}/dashboard`);
     }
   } catch (error) {
     console.error("Token exchange network error:", error);

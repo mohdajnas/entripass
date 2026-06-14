@@ -149,11 +149,17 @@ export function CanvaConnectPanel({
               }`}
             >
               {/* Canva provides thumbnail URLs in design.thumbnail.url */}
-              <img 
-                src={design.thumbnail?.url || ""} 
-                alt={design.title} 
-                className="w-full h-full object-cover"
-              />
+              {design.thumbnail?.url ? (
+                <img 
+                  src={design.thumbnail.url} 
+                  alt={design.title || "Design"} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+                  <ImageIcon className="w-6 h-6 text-slate-300" />
+                </div>
+              )}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span className="text-[10px] font-bold text-white">Select</span>
               </div>

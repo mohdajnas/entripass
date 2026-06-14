@@ -26,9 +26,20 @@ export default async function SetupProfilePage({
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
       <div className="glass-card p-8 w-full max-w-lg animate-slide-up bg-white shadow-xl rounded-2xl border border-slate-200">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-6 justify-center">
-          <img src="/ticket-branding/BCCKUP.png" alt="EntryPass Logo" className="w-16 h-16 object-contain" />
-          <span className="text-2xl font-bold text-slate-900 tracking-tight">EntryPass</span>
+        <div className="flex items-center justify-center mb-8 mt-2">
+          <div 
+            className="h-10 w-40 bg-[#08160c]"
+            style={{
+              maskImage: 'url(/ticket-branding/sidebar-new.png)',
+              maskSize: 'contain',
+              maskRepeat: 'no-repeat',
+              maskPosition: 'center center',
+              WebkitMaskImage: 'url(/ticket-branding/sidebar-new.png)',
+              WebkitMaskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center center'
+            }}
+          />
         </div>
 
         <h1 className="text-2xl font-bold text-slate-900 text-center mb-1">Set up your profile</h1>

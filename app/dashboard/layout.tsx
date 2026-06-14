@@ -14,9 +14,9 @@ export default function DashboardLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Extract eventId from path if present
+  // Extract eventId from path if present, ignoring 'new'
   const eventMatch = pathname.match(/\/dashboard\/events\/([^/]+)/);
-  const eventId = eventMatch ? eventMatch[1] : undefined;
+  const eventId = eventMatch && eventMatch[1] !== "new" ? eventMatch[1] : undefined;
 
   return (
     <div className="flex h-screen bg-[var(--sidebar)] overflow-hidden">

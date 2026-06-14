@@ -41,6 +41,8 @@ interface CanvasElement {
   fontStyle: string;
   color: string;
   visible: boolean;
+  textTransform?: string;
+  rotation?: number;
 }
 
 interface SponsorLogoElement {
@@ -65,7 +67,8 @@ interface TicketDesign {
     eventTitle: CanvasElement;
     venue: CanvasElement;
     dateTime: CanvasElement;
-    qrCode: { x: number; y: number; size: number; visible: boolean };
+    qrCode?: { x: number; y: number; size: number; visible: boolean; rotation?: number; color?: string; bgColor?: string };
+    [key: string]: any;
   };
   sponsors: SponsorLogoElement[];
 }
@@ -113,7 +116,7 @@ export default function ViewTicketPage() {
 
   useEffect(() => {
     if (!ticketRef.current || !ticketDesign) return;
-    const baseWidth = ticketDesign.mode === "canvas" && ticketDesign.canvasFormat === "badge" ? 400 : 600;
+    const baseWidth = ticketDesign.mode === "canvas" && ticketDesign.canvasFormat === "badge" ? 400 : 800;
     
     // Initial scale calculation
     const rect = ticketRef.current.getBoundingClientRect();
@@ -161,7 +164,7 @@ export default function ViewTicketPage() {
       toast.loading("Generating your ticket...", { id: "download" });
       const dataUrl = await toPng(ticketRef.current, {
         cacheBust: true,
-        pixelRatio: 2, // high quality
+        pixelRatio: 4, // ultra high quality
       });
       const link = document.createElement("a");
       link.download = `EntryPass-Ticket-${ticketId}.png`;
@@ -345,18 +348,20 @@ export default function ViewTicketPage() {
                           : "rounded-3xl"
                     }`
                   : ticketDesign.backgroundType === "image"
-                    ? "border border-slate-800/80"
+                    ? "overflow-hidden border border-slate-800/80"
                     : "overflow-hidden border border-slate-800/80 rounded-3xl"
               } ${
                 ticketDesign.mode === "canvas" && ticketDesign.backgroundType === "gradient" ? ticketDesign.backgroundValue : ""
               }`}
               style={{
                 backgroundImage:
-                  ticketDesign.backgroundType === "image" ? `url(${ticketDesign.backgroundValue})` : undefined,
+                  ticketDesign.backgroundType === "image" 
+                    ? `url(${ticketDesign.backgroundValue?.startsWith("http") ? `/api/proxy-image?url=${encodeURIComponent(ticketDesign.backgroundValue)}` : ticketDesign.backgroundValue})` 
+                    : undefined,
                 backgroundColor:
                   ticketDesign.backgroundType === "color" ? ticketDesign.backgroundValue : undefined,
-                aspectRatio: ticketDesign.backgroundType === "image" && bgAspectRatio ? String(bgAspectRatio) : undefined,
-                height: ticketDesign.backgroundType === "image" && bgAspectRatio ? "auto" : (ticketDesign.canvasFormat === "badge" ? "450px" : "260px"),
+                aspectRatio: ticketDesign.backgroundType === "image" && bgAspectRatio ? String(bgAspectRatio) : (ticketDesign.canvasFormat === "badge" ? "400 / 600" : "800 / 320"),
+                height: "auto",
               }}
             >
               {/* circular cutout notches for Notch Preset */}
@@ -378,116 +383,75 @@ export default function ViewTicketPage() {
               {/* Card Glare/Overlay */}
               <div className={`absolute inset-0 bg-white/[0.03] ${ticketDesign.mode === "canvas" && ticketDesign.backgroundType === "gradient" ? "backdrop-blur-[0.5px]" : ""}`} />
 
-              {/* 1. Dynamic Event Title */}
-              {ticketDesign.elements.eventTitle?.visible && (
-                <div
-                  className="absolute"
-                  style={{
-                    left: `${ticketDesign.elements.eventTitle.x}%`,
-                    top: `${ticketDesign.elements.eventTitle.y}%`,
-                    fontFamily: ticketDesign.elements.eventTitle.fontFamily,
-                    fontSize: `${ticketDesign.elements.eventTitle.fontSize * scale}px`,
-                    fontWeight: ticketDesign.elements.eventTitle.fontWeight || "bold",
-                    fontStyle: ticketDesign.elements.eventTitle.fontStyle || "normal",
-                    color: ticketDesign.elements.eventTitle.color,
-                  }}
-                >
-                  {event.title}
-                </div>
-              )}
+              {/* Dynamic Text Elements */}
+              {Object.keys(ticketDesign.elements).filter(k => !k.startsWith("qrCode")).map((key) => {
+                const el = ticketDesign.elements[key];
+                if (!el?.visible) return null;
+                const baseKey = key.split('_')[0];
+                
+                let textContent = "";
+                if (baseKey === "eventTitle") textContent = event.title || "Event Title";
+                else if (baseKey === "name") textContent = guest.name || "Guest Name";
+                else if (baseKey === "ticketId") {
+                  const shortId = guest.id.includes("-") ? guest.id.substring(0, 8) : guest.id;
+                  textContent = `${ticketTypeName} • ${shortId.toUpperCase()}`;
+                }
+                else if (baseKey === "venue") textContent = event.venue || "TBD Venue";
+                else if (baseKey === "dateTime") {
+                  textContent = event.start_time 
+                    ? new Date(event.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+                    : "TBD Date & Time";
+                }
 
-              {/* 2. Dynamic Name */}
-              {ticketDesign.elements.name?.visible && (
-                <div
-                  className="absolute animate-fade-in"
-                  style={{
-                    left: `${ticketDesign.elements.name.x}%`,
-                    top: `${ticketDesign.elements.name.y}%`,
-                    fontFamily: ticketDesign.elements.name.fontFamily,
-                    fontSize: `${ticketDesign.elements.name.fontSize * scale}px`,
-                    fontWeight: ticketDesign.elements.name.fontWeight || "extrabold",
-                    fontStyle: ticketDesign.elements.name.fontStyle || "normal",
-                    color: ticketDesign.elements.name.color,
-                  }}
-                >
-                  {guest.name}
-                </div>
-              )}
+                return (
+                  <div
+                    key={key}
+                    className="absolute whitespace-nowrap"
+                    style={{
+                      left: `${el.x}%`,
+                      top: `${el.y}%`,
+                      fontFamily: el.fontFamily,
+                      fontSize: `${el.fontSize * scale}px`,
+                      fontWeight: el.fontWeight || "normal",
+                      fontStyle: el.fontStyle || "normal",
+                      color: el.color,
+                      textTransform: el.textTransform as any || "none",
+                      transform: `translate(-50%, -50%) rotate(${el.rotation || 0}deg)`,
+                    }}
+                  >
+                    {textContent}
+                  </div>
+                );
+              })}
 
-              {/* 3. Dynamic Ticket ID */}
-              {ticketDesign.elements.ticketId?.visible && (
-                <div
-                  className="absolute"
-                  style={{
-                    left: `${ticketDesign.elements.ticketId.x}%`,
-                    top: `${ticketDesign.elements.ticketId.y}%`,
-                    fontFamily: ticketDesign.elements.ticketId.fontFamily,
-                    fontSize: `${ticketDesign.elements.ticketId.fontSize * scale}px`,
-                    fontWeight: ticketDesign.elements.ticketId.fontWeight || "normal",
-                    fontStyle: ticketDesign.elements.ticketId.fontStyle || "normal",
-                    color: ticketDesign.elements.ticketId.color,
-                  }}
-                >
-                  {ticketTypeName} • {guest.id.includes("-") ? guest.id.substring(0, 8).toUpperCase() : guest.id.toUpperCase()}
-                </div>
-              )}
-
-              {/* 4. Dynamic Venue */}
-              {ticketDesign.elements.venue?.visible && (
-                <div
-                  className="absolute"
-                  style={{
-                    left: `${ticketDesign.elements.venue.x}%`,
-                    top: `${ticketDesign.elements.venue.y}%`,
-                    fontFamily: ticketDesign.elements.venue.fontFamily,
-                    fontSize: `${ticketDesign.elements.venue.fontSize * scale}px`,
-                    fontWeight: ticketDesign.elements.venue.fontWeight || "normal",
-                    fontStyle: ticketDesign.elements.venue.fontStyle || "normal",
-                    color: ticketDesign.elements.venue.color,
-                  }}
-                >
-                  {event.venue || "TBD Venue"}
-                </div>
-              )}
-
-              {/* 5. Dynamic Date Time */}
-              {ticketDesign.elements.dateTime?.visible && (
-                <div
-                  className="absolute"
-                  style={{
-                    left: `${ticketDesign.elements.dateTime.x}%`,
-                    top: `${ticketDesign.elements.dateTime.y}%`,
-                    fontFamily: ticketDesign.elements.dateTime.fontFamily,
-                    fontSize: `${ticketDesign.elements.dateTime.fontSize * scale}px`,
-                    fontWeight: ticketDesign.elements.dateTime.fontWeight || "normal",
-                    fontStyle: ticketDesign.elements.dateTime.fontStyle || "normal",
-                    color: ticketDesign.elements.dateTime.color,
-                  }}
-                >
-                  {formattedDate} • {formattedTime || "TBD"}
-                </div>
-              )}
-
-              {/* 6. Dynamic QR Code */}
-              {ticketDesign.elements.qrCode?.visible && (
-                <div
-                  className="absolute flex items-center justify-center"
-                  style={{
-                    left: `${ticketDesign.elements.qrCode.x}%`,
-                    top: `${ticketDesign.elements.qrCode.y}%`,
-                    width: `${ticketDesign.elements.qrCode.size * scale}px`,
-                    height: `${ticketDesign.elements.qrCode.size * scale}px`,
-                  }}
-                >
-                  <QRCodeSVG
-                    value={guest.qr_code || `eventpass://checkin/${guest.id}`}
-                    size={ticketDesign.elements.qrCode.size * scale}
-                    level="H"
-                    includeMargin={false}
-                    bgColor="transparent"
-                  />
-                </div>
-              )}
+              {/* Dynamic QR Codes */}
+              {Object.keys(ticketDesign.elements).filter(k => k.startsWith("qrCode")).map((key) => {
+                const qrEl = ticketDesign.elements[key];
+                if (!qrEl?.visible) return null;
+                return (
+                  <div
+                    key={key}
+                    className="absolute flex items-center justify-center"
+                    style={{
+                      left: `${qrEl.x}%`,
+                      top: `${qrEl.y}%`,
+                      width: `${qrEl.size * scale}px`,
+                      height: `${qrEl.size * scale}px`,
+                      transform: `rotate(${qrEl.rotation || 0}deg)`,
+                      backgroundColor: qrEl.bgColor || 'white'
+                    }}
+                  >
+                    <QRCodeSVG
+                      value={guest.qr_code || `eventpass://checkin/${guest.id}`}
+                      size={qrEl.size * scale}
+                      level="H"
+                      includeMargin={false}
+                      bgColor="transparent"
+                      fgColor={qrEl.color || '#000000'}
+                    />
+                  </div>
+                );
+              })}
 
               {/* 7. Draggable Sponsor Logos */}
               {ticketDesign.mode === "canvas" &&
