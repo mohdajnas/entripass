@@ -69,50 +69,50 @@
 /* ─── Eco-Teal Theme ─── */
 :root {
   /* Main app container background */
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f4f4f5;
+  --foreground: #09090b;
   
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #09090b;
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #09090b;
   
-  /* Bright Emerald Green Accent */
-  --primary: #2ed573;
-  --primary-foreground: #ffffff;
+  /* Bright Lime Green Accent */
+  --primary: #a3e635; /* Tailwind lime-400 */
+  --primary-foreground: #022c22; /* Dark text on bright lime */
   
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #09090b;
   
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
   
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
+  --accent: #f4f4f5;
+  --accent-foreground: #09090b;
   
   --destructive: #ef4444;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #2ed573;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #a3e635;
   
-  /* Chart Colors */
-  --chart-1: #2ed573;
-  --chart-2: #0b3b32;
-  --chart-3: #ff6b81;
-  --chart-4: #ffa502;
-  --chart-5: #1e90ff;
+  /* Chart Colors (Matching the image) */
+  --chart-1: #a3e635; /* Lime green */
+  --chart-2: #0b1a10; /* Very dark forest green */
+  --chart-3: #f59e0b; /* Amber */
+  --chart-4: #10b981; /* Emerald */
+  --chart-5: #3b82f6; /* Blue */
   
   --radius: 0.75rem;
   
-  /* Sidebar */
-  --sidebar: #0b3b32;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #2ed573;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.1);
-  --sidebar-accent-foreground: #ffffff;
+  /* Sidebar (Matching the dark forest green from the image) */
+  --sidebar: #08160c;
+  --sidebar-foreground: #a1a1aa; /* Muted gray for inactive items */
+  --sidebar-primary: #a3e635;
+  --sidebar-primary-foreground: #022c22;
+  --sidebar-accent: rgba(163, 230, 53, 0.1); /* Subtle lime background for active */
+  --sidebar-accent-foreground: #a3e635; /* Bright lime for active items */
   --sidebar-border: rgba(255, 255, 255, 0.05);
-  --sidebar-ring: #2ed573;
+  --sidebar-ring: #a3e635;
 }
 
 @layer base {
@@ -161,9 +161,9 @@
   color: var(--muted-foreground);
 }
 
-/* Dark variant cards (like the Climate Change Index) */
+/* Dark variant cards (like the "Update" card in the image) */
 .dark-card {
-  background: #0d2822;
+  background: #0b1a10; /* Dark forest green */
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: white;
   border-radius: 1rem;
@@ -176,25 +176,29 @@
 
 /* Green variant cards */
 .green-card {
-  background: linear-gradient(135deg, #168d50, #0d5e35);
-  color: white;
+  background: linear-gradient(135deg, #a3e635, #84cc16);
+  color: #022c22; /* Dark text */
   border-radius: 1rem;
   border: none;
-  box-shadow: 0 4px 20px rgba(46, 213, 115, 0.3);
+  box-shadow: 0 4px 20px rgba(163, 230, 53, 0.3);
+}
+
+.green-card * {
+  color: #022c22;
 }
 
 /* ─── Gradient button ─── */
 .btn-gradient {
   background: var(--primary);
-  color: white;
+  color: #022c22;
   border: none;
-  font-weight: 500;
+  font-weight: 600;
   border-radius: 0.75rem;
   transition: all 0.3s ease;
 }
 
 .btn-gradient:hover {
-  background: #25b862;
+  background: #84cc16; /* lime-500 */
   transform: translateY(-1px);
 }
 
@@ -269,7 +273,7 @@
 
 /* ─── Gradient text utility ─── */
 .gradient-text {
-  background: linear-gradient(135deg, #168d50, #2ed573);
+  background: linear-gradient(135deg, #0b1a10, #a3e635);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

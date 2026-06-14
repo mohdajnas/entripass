@@ -73,29 +73,24 @@ export function GlassSidebar({
       className={cn(
         "fixed left-0 top-0 h-screen z-40 flex flex-col transition-all duration-300",
         "bg-[var(--sidebar)] text-[var(--sidebar-foreground)] border-r border-[var(--sidebar-border)]",
-        "w-[260px] md:w-auto", // Fixed width on mobile, dynamic on desktop
-        collapsed ? "md:w-[68px]" : "md:w-[260px]",
+        "w-[220px] md:w-auto", // Fixed width on mobile, dynamic on desktop
+        collapsed ? "md:w-[68px]" : "md:w-[220px]",
         mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}
     >
       {/* Logo */}
       <div className={cn(
-        "flex items-center gap-3 px-4 h-16 border-b border-[var(--sidebar-border)]",
-        collapsed ? "justify-center" : "justify-start"
+        "flex items-center h-20 border-b border-[var(--sidebar-border)]",
+        collapsed ? "justify-center px-0" : "justify-start gap-3 px-5"
       )}>
         <img 
-          src="/ticket-branding/BCCKUP.png" 
+          src={collapsed ? "/ticket-branding/sidebar-collapse.png" : "/ticket-branding/sidebar-new.png"} 
           alt="EntryPass Logo" 
-          className="w-14 h-14 object-contain flex-shrink-0"
+          className={cn(
+            "object-contain flex-shrink-0 transition-all",
+            collapsed ? "h-8 w-auto" : "h-10 w-auto"
+          )}
         />
-        {!collapsed && (
-          <span 
-            className="text-2xl font-semibold text-white tracking-tight"
-            style={{ fontFamily: "'Myriad Pro', sans-serif", fontWeight: 600 }}
-          >
-            EntryPass
-          </span>
-        )}
       </div>
 
       {/* Nav items */}
@@ -105,7 +100,8 @@ export function GlassSidebar({
           href="/dashboard"
           onClick={() => setMobileMenuOpen(false)}
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+            "flex items-center gap-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+            collapsed ? "justify-center px-0" : "px-3",
             pathname === "/dashboard"
               ? "bg-[var(--sidebar-accent)] text-white"
               : "text-white hover:bg-[var(--sidebar-accent)]"
@@ -119,7 +115,8 @@ export function GlassSidebar({
           href="/dashboard/profile"
           onClick={() => setMobileMenuOpen(false)}
           className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+            "flex items-center gap-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+            collapsed ? "justify-center px-0" : "px-3",
             pathname === "/dashboard/profile"
               ? "bg-[var(--sidebar-accent)] text-white"
               : "text-white hover:bg-[var(--sidebar-accent)]"
@@ -151,7 +148,8 @@ export function GlassSidebar({
                   href={fullHref}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+                    "flex items-center gap-3 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+                    collapsed ? "justify-center px-0" : "px-3",
                     isActive
                       ? "bg-[var(--sidebar-accent)] text-[var(--sidebar-accent-foreground)]"
                       : "text-white hover:bg-[var(--sidebar-accent)]"
@@ -170,7 +168,10 @@ export function GlassSidebar({
       <div className="border-t border-[var(--sidebar-border)] p-3 space-y-2">
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white hover:bg-[var(--sidebar-accent)] transition-all w-full"
+          className={cn(
+            "flex items-center gap-3 py-2 rounded-xl text-sm text-white hover:bg-[var(--sidebar-accent)] transition-all w-full",
+            collapsed ? "justify-center px-0" : "px-3"
+          )}
         >
           {collapsed ? (
             <ChevronRight className="w-4 h-4" />
@@ -181,7 +182,10 @@ export function GlassSidebar({
             </>
           )}
         </button>
-        <button className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-white hover:text-red-400 hover:bg-[var(--sidebar-accent)] transition-all w-full">
+        <button className={cn(
+          "flex items-center gap-3 py-2 rounded-xl text-sm text-white hover:text-red-400 hover:bg-[var(--sidebar-accent)] transition-all w-full",
+          collapsed ? "justify-center px-0" : "px-3"
+        )}>
           <LogOut className="w-4 h-4 flex-shrink-0" />
           {!collapsed && <span>Sign Out</span>}
         </button>

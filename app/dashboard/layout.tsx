@@ -37,7 +37,7 @@ export default function DashboardLayout({
       />
       <div 
         className={`flex-1 flex flex-col transition-all duration-300 p-2 ml-0 ${
-          collapsed ? "md:ml-[68px]" : "md:ml-[260px]"
+          collapsed ? "md:ml-[68px]" : "md:ml-[220px]"
         } md:pl-0`}
       >
         <div className="flex-1 flex flex-col bg-[#f8fafc] rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl relative">

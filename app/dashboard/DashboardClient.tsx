@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-const statusStyles: Record<string, string> = {
-  draft: "bg-amber-500/20 text-amber-600 border-amber-500/30",
-  published: "bg-emerald-500/20 text-emerald-700 border-emerald-500/30",
-  ended: "bg-black/[0.03] text-slate-500 border-black/5",
+const statusColors: Record<string, string> = {
+  draft: "text-amber-400",
+  published: "text-[#a3e635]",
+  ended: "text-slate-400",
 };
 
 // Update this to match the live Supabase event schema
@@ -31,77 +31,74 @@ export interface LiveEvent {
 }
 
 function EventCard({ event, i }: { event: LiveEvent; i: number }) {
+  const eventDate = event.start_time ? new Date(event.start_time) : null;
+  const day = eventDate ? eventDate.getDate().toString().padStart(2, '0') : "--";
+  const month = eventDate ? eventDate.toLocaleString('default', { month: 'short' }) : "TBD";
+  const year = eventDate ? eventDate.getFullYear().toString() : "";
+
   return (
-    <Link
-      href={`/dashboard/events/${event.id}`}
-      className="glass-card group p-0 overflow-hidden animate-slide-up"
-      style={{ animationDelay: `${i * 80}ms` }}
-    >
-      {/* Banner placeholder */}
-      <div className="h-36 bg-gradient-to-br from-emerald-600/30 to-teal-700/30 relative overflow-hidden">
-        {event.banner_url && (
-          <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(255,255,255,0.9)] to-transparent" />
-        <div className="absolute bottom-3 left-4 right-4">
-          <Badge
-            className={`border text-[10px] font-semibold uppercase tracking-wider ${statusStyles[event.status] || "bg-black/5"}`}
-          >
-            {event.status}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-5 space-y-3">
-        <h3 className="text-lg font-semibold text-slate-900 group-hover:text-emerald-600 transition-colors">
-          {event.title}
-        </h3>
-
-        <div className="space-y-2 text-sm text-slate-500">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>
-              {event.start_time ? new Date(event.start_time).toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              }) : "TBD"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            {event.is_online ? (
-              <Globe className="w-3.5 h-3.5" />
+    <Link href={`/dashboard/events/${event.id}`} className="block w-full max-w-sm mx-auto animate-slide-up" style={{ animationDelay: `${i * 80}ms` }}>
+      <div className="bg-[#08160c] p-2.5 rounded-[2.5rem] w-full relative group cursor-pointer hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow-md">
+        <div className="relative w-full aspect-[4/4.5] rounded-[2rem] overflow-hidden bg-[#0b1a10] shadow-inner">
+          {/* Background Image & Gradients */}
+          <div className="absolute inset-0 bg-[#0b1a10] overflow-hidden">
+            {event.banner_url ? (
+              <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
             ) : (
-              <MapPin className="w-3.5 h-3.5" />
+              <div className="w-full h-full bg-gradient-to-br from-[#08160c] to-[#0a2012]" />
             )}
-            <span className="truncate">{event.venue || "Online / TBD"}</span>
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0b1a10] to-transparent" />
           </div>
-          <div className="flex items-center gap-2">
-            <Users className="w-3.5 h-3.5" />
-            <span>
-              {/* Needs actual registered count via join or RPC */}
-              Max Capacity: {event.max_capacity?.toLocaleString() || "Unlimited"}
-            </span>
+
+          {/* Top Right Text */}
+          <div className="absolute top-6 right-6 text-right z-10 pointer-events-none">
+            <h3 className={cn("font-semibold text-[17px] tracking-tight drop-shadow-sm uppercase", statusColors[event.status] || "text-white")}>
+              {event.status}
+            </h3>
+            <p className="text-white/70 text-[13px] font-medium drop-shadow-sm mt-0.5">
+              Event Status
+            </p>
           </div>
-        </div>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {event.tags?.map((tag) => (
-            <span
-              key={tag}
-              className="px-2 py-0.5 text-[10px] rounded-full bg-slate-100 text-slate-500 border border-slate-200"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+          {/* The SVG Folder Shape */}
+          <div className="absolute bottom-0 left-0 w-full h-[65%] z-20 pointer-events-none">
+            <svg className="absolute inset-0 w-full h-full text-[#0b1a10] fill-current" preserveAspectRatio="none" viewBox="0 0 100 100">
+              <path d="M0,0 L42,0 C48,0 52,22 58,22 L100,22 L100,100 L0,100 Z" />
+            </svg>
+            
+            <div className="absolute inset-0 p-6 flex flex-col justify-between">
+              {/* Folder Header */}
+              <div className="mt-1 w-[52%]">
+                <h2 className="text-white text-[20px] leading-tight font-bold tracking-tight pr-2 line-clamp-2" title={event.title}>
+                  {event.title}
+                </h2>
+                <p className="text-[#8e8e93] text-[13px] mt-1.5 font-medium truncate flex items-center gap-1.5">
+                  {event.is_online ? <Globe className="w-3.5 h-3.5" /> : <MapPin className="w-3.5 h-3.5" />}
+                  {event.is_online ? "Online Event" : (event.venue || "TBD")}
+                </p>
+              </div>
 
-        {/* Manage link */}
-        <div className="flex items-center gap-1 pt-2 text-xs text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity">
-          View event
-          <ArrowRight className="w-3 h-3" />
+              {/* Folder Stats */}
+              <div className="flex items-end justify-between mb-1">
+                <div className="flex items-baseline">
+                  <span className="text-white text-[56px] leading-none font-bold tracking-tighter">
+                    {day}
+                  </span>
+                  <span className="text-white/40 text-[28px] font-bold tracking-tighter ml-1">
+                    /{month}
+                  </span>
+                  <span className="text-[#a3e635]/90 font-semibold text-[15px] mb-2 ml-2">
+                    {year}
+                  </span>
+                </div>
+                <div className="text-right mb-2">
+                  <span className="text-white font-bold text-[17px]">
+                    {event.max_capacity ? `${event.max_capacity} Cap.` : "∞"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Link>

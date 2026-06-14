@@ -363,24 +363,19 @@ function VenueCard({ venue, onEdit, onDelete }: { venue: Venue, onEdit: () => vo
 
   return (
     <Link href={`/dashboard/events/${venue.event_id}/venues/${venue.id}`} className="block w-full max-w-sm mx-auto">
-      <div className="bg-[#101010] p-2.5 rounded-[2.5rem] w-full relative group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
-        <div className="relative w-full aspect-[4/4.5] rounded-[2rem] overflow-hidden bg-slate-900 shadow-xl">
+      <div className="bg-[#08160c] p-2.5 rounded-[2.5rem] w-full relative group cursor-pointer hover:-translate-y-1 transition-transform duration-300">
+        <div className="relative w-full aspect-[4/4.5] rounded-[2rem] overflow-hidden bg-[#0b1a10] shadow-xl">
         {/* Background Map Preview & Gradients */}
-        <div className="absolute inset-0 bg-slate-900 overflow-hidden">
+        <div className="absolute inset-0 bg-[#0b1a10] overflow-hidden">
           <iframe 
             src={`https://maps.google.com/maps?q=${encodeURIComponent(venue.name)}&t=&z=14&ie=UTF8&iwloc=&output=embed`} 
-            className="w-[150%] h-[150%] absolute top-[-25%] left-[-25%] pointer-events-none opacity-50 filter grayscale-[0.8] contrast-125"
+            className="w-[150%] h-[150%] absolute top-[-25%] left-[-25%] pointer-events-none transition-transform duration-700 group-hover:scale-105"
             style={{ border: 0 }}
             loading="lazy"
             title={`${venue.name} map preview`}
           />
-          <div className="absolute inset-0 bg-slate-900/40 group-hover:bg-slate-900/20 transition-colors duration-700 ease-out" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#101010]/90 via-[#101010]/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0b1a10] to-transparent" />
         </div>
-        
-        {/* Abstract light blobs */}
-        <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] bg-white/10 blur-[50px] rounded-full mix-blend-overlay pointer-events-none" />
-        <div className="absolute bottom-[30%] right-[-10%] w-[60%] h-[60%] bg-black/40 blur-[40px] rounded-full mix-blend-overlay pointer-events-none" />
 
         {/* Top Right Text */}
         <div className="absolute top-6 right-6 text-right z-10 pointer-events-none">
@@ -394,7 +389,7 @@ function VenueCard({ venue, onEdit, onDelete }: { venue: Venue, onEdit: () => vo
 
         {/* The SVG Folder Shape */}
         <div className="absolute bottom-0 left-0 w-full h-[65%] z-20 pointer-events-none">
-          <svg className="absolute inset-0 w-full h-full text-[#1c1c1e] fill-current" preserveAspectRatio="none" viewBox="0 0 100 100">
+          <svg className="absolute inset-0 w-full h-full text-[#0b1a10] fill-current" preserveAspectRatio="none" viewBox="0 0 100 100">
             <path d="M0,0 L42,0 C48,0 52,22 58,22 L100,22 L100,100 L0,100 Z" />
           </svg>
           
