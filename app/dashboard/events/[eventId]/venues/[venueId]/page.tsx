@@ -105,7 +105,7 @@ export default function VenuePreviewPage() {
       {/* Interactive Map Banner */}
       <div className="w-full h-[300px] md:h-[400px] rounded-3xl overflow-hidden bg-slate-900 relative shadow-lg ring-1 ring-black/5">
         <iframe 
-          src={`https://maps.google.com/maps?q=${encodeURIComponent(venue.location_url || venue.name)}&t=&z=14&ie=UTF8&iwloc=&output=embed`} 
+          src={`https://maps.google.com/maps?q=${encodeURIComponent(venue.name)}&t=&z=14&ie=UTF8&iwloc=&output=embed`} 
           className="w-full h-full border-0"
           loading="lazy"
           allowFullScreen

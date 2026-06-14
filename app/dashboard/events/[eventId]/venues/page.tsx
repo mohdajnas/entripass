@@ -368,7 +368,7 @@ function VenueCard({ venue, onEdit, onDelete }: { venue: Venue, onEdit: () => vo
         {/* Background Map Preview & Gradients */}
         <div className="absolute inset-0 bg-slate-900 overflow-hidden">
           <iframe 
-            src={`https://maps.google.com/maps?q=${encodeURIComponent(venue.location_url || venue.name)}&t=&z=14&ie=UTF8&iwloc=&output=embed`} 
+            src={`https://maps.google.com/maps?q=${encodeURIComponent(venue.name)}&t=&z=14&ie=UTF8&iwloc=&output=embed`} 
             className="w-[150%] h-[150%] absolute top-[-25%] left-[-25%] pointer-events-none opacity-50 filter grayscale-[0.8] contrast-125"
             style={{ border: 0 }}
             loading="lazy"
