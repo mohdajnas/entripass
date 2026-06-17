@@ -16,6 +16,7 @@ create table events (
   slug text not null,
   description text,
   banner_url text,
+  poster_url text,
   start_time timestamptz,
   end_time timestamptz,
   venue text,

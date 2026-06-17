@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const posterInputRef = useRef<HTMLInputElement>(null);
   const ticketDesignRef = useRef<string | null>(null);
   
   const [recentVenues, setRecentVenues] = useState<string[]>([]);
@@ -93,6 +94,22 @@ export default function SettingsPage() {
       reader.onload = (e) => {
         handleChange("banner_url", e.target?.result as string);
         toast.success("Banner uploaded locally!");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePosterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be less than 5MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        handleChange("poster_url", e.target?.result as string);
+        toast.success("Portrait poster uploaded locally!");
       };
       reader.readAsDataURL(file);
     }
@@ -263,6 +280,51 @@ export default function SettingsPage() {
               <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
               <p className="text-sm text-slate-600 font-medium">Click or drag to upload banner</p>
               <p className="text-xs text-slate-500 mt-1">Recommended: 1920×600px, Max size: 5MB</p>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Poster */}
+      <div className="glass-card p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-slate-700 uppercase tracking-wider">Portrait Poster Image</h3>
+          {formData.poster_url && (
+            <button 
+              onClick={() => handleChange("poster_url", null)} 
+              className="text-xs text-red-500 hover:text-red-600 font-medium"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+        
+        <input 
+          type="file" 
+          ref={posterInputRef} 
+          className="hidden" 
+          accept="image/*" 
+          onChange={handlePosterUpload} 
+        />
+        
+        <div 
+          onClick={() => posterInputRef.current?.click()}
+          className="border-2 border-dashed border-black/10 rounded-2xl p-8 text-center cursor-pointer hover:bg-black/[0.02] transition-colors relative overflow-hidden group min-h-[300px] max-w-[250px] mx-auto flex flex-col items-center justify-center"
+        >
+          {formData.poster_url ? (
+            <>
+              <img src={formData.poster_url} alt="Poster Preview" className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity backdrop-blur-sm">
+                <p className="text-white font-medium flex items-center gap-2">
+                  <Upload className="w-4 h-4" /> Change Image
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-sm text-slate-600 font-medium">Click or drag to upload portrait poster</p>
+              <p className="text-xs text-slate-500 mt-1">Recommended: 2:3 or 4:5 ratio, Max size: 5MB</p>
             </>
           )}
         </div>

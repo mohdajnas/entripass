@@ -93,12 +93,12 @@ export default async function EventPage({
                   </div>
                 </div>
 
-                <hr className="border-slate-100 my-8" />
+                  <hr className="border-slate-100 my-8" />
 
-                <h2 className="text-2xl font-bold text-slate-900 mb-4">About this event</h2>
-                <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-wrap break-words break-all">
-                  {event.description ? event.description.split(" ||TICKET_DESIGN|| ")[0] : "No description provided."}
-                </div>
+                  <h2 className="text-2xl font-bold text-slate-900 mb-4">About this event</h2>
+                  <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-wrap break-words break-all">
+                    {event.description ? event.description.split(" ||TICKET_DESIGN|| ")[0] : "No description provided."}
+                  </div>
               </div>
             </div>
 

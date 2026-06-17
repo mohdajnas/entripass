@@ -21,6 +21,7 @@ interface LiveEvent {
   is_online: boolean;
   tags: string[] | null;
   banner_url: string | null;
+  poster_url: string | null;
   show_speakers: boolean | null;
 }
 
@@ -97,7 +98,7 @@ export default function PublicEventPage() {
         // Fetch Event Details
         const { data: eventData, error: eventError } = await supabase
           .from("events")
-          .select("id, title, description, start_time, end_time, venue, map_link, is_online, tags, banner_url, show_speakers")
+          .select("id, title, description, start_time, end_time, venue, map_link, is_online, tags, banner_url, poster_url, show_speakers")
           .eq("id", eventId)
           .single();
 

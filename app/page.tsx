@@ -8,7 +8,7 @@ export default async function LandingPage() {
   const supabase = await createClient();
   const { data: publicEvents } = await supabase
     .from("events")
-    .select("id, title, description, banner_url, start_time, venue, slug")
+    .select("id, title, description, banner_url, poster_url, start_time, venue, slug")
     .eq("is_public", true)
     .order("start_time", { ascending: true })
     .limit(8);
@@ -74,9 +74,9 @@ export default async function LandingPage() {
                 <Link href={`/${event.slug}`} key={event.id} className="group flex flex-col">
                   {/* Aspect Ratio 3:4 Image */}
                   <div className="aspect-[3/4] w-full rounded-[24px] overflow-hidden bg-slate-100 mb-5 relative">
-                    {event.banner_url ? (
+                    {event.poster_url || event.banner_url ? (
                       <img 
-                        src={event.banner_url} 
+                        src={event.poster_url || event.banner_url} 
                         alt={event.title} 
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                       />
