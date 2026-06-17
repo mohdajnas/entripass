@@ -165,6 +165,8 @@ export default function ViewTicketPage() {
       const dataUrl = await toPng(ticketRef.current, {
         cacheBust: true,
         pixelRatio: 4, // ultra high quality
+        useCORS: true,
+        allowTaint: false,
       });
       const link = document.createElement("a");
       link.download = `EntryPass-Ticket-${ticketId}.png`;
@@ -356,7 +358,7 @@ export default function ViewTicketPage() {
               style={{
                 backgroundImage:
                   ticketDesign.backgroundType === "image" 
-                    ? `url(${ticketDesign.backgroundValue?.startsWith("http") ? `/api/proxy-image?url=${encodeURIComponent(ticketDesign.backgroundValue)}` : ticketDesign.backgroundValue})` 
+                    ? `url(${ticketDesign.backgroundValue})` 
                     : undefined,
                 backgroundColor:
                   ticketDesign.backgroundType === "color" ? ticketDesign.backgroundValue : undefined,

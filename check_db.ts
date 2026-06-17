@@ -12,30 +12,18 @@ for (const line of lines) {
 const supabase = createClient(url, key);
 
 async function check() {
-  const { data: events } = await supabase.from('events').select('id').limit(1);
-  if (!events || events.length === 0) {
-    console.log("No events found");
-    return;
-  }
-  const eventId = events[0].id;
-  console.log('Testing insert for event:', eventId);
-
-  const { data: newGuest, error } = await supabase
-    .from("guests")
-    .insert({
-      event_id: eventId,
-      name: "Test User",
-      email: "test@example.com",
-      status: "confirmed",
-      qr_code: "TEST_QR",
-      payment_status: "paid",
-      amount_paid: 0,
-    })
-    .select("*");
-
-  console.log('Insert Result:', newGuest);
-  if (error) {
-    console.error('Insert Error:', JSON.stringify(error, null, 2));
+  const { data: events } = await supabase.from('events').select('id, description').limit(3);
+  for (const ev of events || []) {
+    if (ev.description && ev.description.includes('||TICKET_DESIGN||')) {
+      const design = ev.description.split(' ||TICKET_DESIGN|| ')[1];
+      try {
+         console.log('Event', ev.id, 'Design:', JSON.parse(design).backgroundValue);
+      } catch (e) {
+         console.log('Event', ev.id, 'JSON Parse error');
+      }
+    } else {
+      console.log('Event', ev.id, 'No design');
+    }
   }
 }
 

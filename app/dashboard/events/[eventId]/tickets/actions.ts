@@ -103,6 +103,34 @@ export async function toggleTicketVisibility(ticketId: string, isVisible: boolea
 export async function saveTicketDesign(eventId: string, design: any) {
   const supabase = await createClient();
 
+  // If the background is a temporary Canva export, download it and store it permanently
+  if (design.backgroundType === "image" && design.backgroundValue && design.backgroundValue.startsWith("https://export-download.canva.com/")) {
+    try {
+      const response = await fetch(design.backgroundValue);
+      if (response.ok) {
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const fileName = `${eventId}/canva-bg-${Date.now()}.png`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("ticket-designs")
+          .upload(fileName, buffer, { contentType: "image/png", upsert: true });
+
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from("ticket-designs")
+            .getPublicUrl(fileName);
+          
+          design.backgroundValue = publicUrl;
+        } else {
+          console.error("Failed to upload Canva image to Supabase:", uploadError);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch Canva image:", e);
+    }
+  }
+
   // First fetch the event description
   const { data: eventData, error: fetchError } = await supabase
     .from("events")
