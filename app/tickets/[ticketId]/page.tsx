@@ -165,8 +165,6 @@ export default function ViewTicketPage() {
       const dataUrl = await toPng(ticketRef.current, {
         cacheBust: true,
         pixelRatio: 4, // ultra high quality
-        useCORS: true,
-        allowTaint: false,
       });
       const link = document.createElement("a");
       link.download = `EntryPass-Ticket-${ticketId}.png`;
