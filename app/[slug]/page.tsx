@@ -135,7 +135,7 @@ export default function PublicSlugPage() {
           .eq("event_id", eventId)
           .order("name", { ascending: true });
 
-        setLiveEvent(eventData);
+        setLiveEvent(eventData as any);
         if (ticketTypesData) {
           setLiveTickets(ticketTypesData);
           if (ticketTypesData.length > 0) {
