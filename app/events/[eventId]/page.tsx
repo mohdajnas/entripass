@@ -343,7 +343,7 @@ export default function PublicEventPage() {
 
             <div className="glass-card bg-white border border-slate-200 p-8 shadow-sm rounded-2xl animate-slide-up" style={{ animationDelay: "100ms" }}>
               <h2 className="text-2xl font-bold text-slate-900 mb-4">About this event</h2>
-              <div className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+              <div className="text-slate-600 leading-relaxed whitespace-pre-wrap break-words break-all">
                 {event.description ? event.description.split(" ||TICKET_DESIGN|| ")[0] : "No description provided for this event."}
               </div>
             </div>

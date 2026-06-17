@@ -18,6 +18,7 @@ import {
 export function GlassNavbar({ title, onMenuClick }: { title?: string, onMenuClick?: () => void }) {
   const router = useRouter();
   const [initials, setInitials] = useState("U");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const supabase = createClient();
 
@@ -27,10 +28,13 @@ export function GlassNavbar({ title, onMenuClick }: { title?: string, onMenuClic
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name")
+          .select("full_name, avatar_url")
           .eq("id", user.id)
           .single();
         
+        if (profile?.avatar_url) {
+          setAvatarUrl(profile.avatar_url);
+        }
         if (profile?.full_name) {
           const names = profile.full_name.split(" ");
           if (names.length >= 2) {
@@ -46,6 +50,7 @@ export function GlassNavbar({ title, onMenuClick }: { title?: string, onMenuClic
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    router.refresh();
     router.push("/login");
   };
 
@@ -102,8 +107,12 @@ export function GlassNavbar({ title, onMenuClick }: { title?: string, onMenuClic
 
         {/* Avatar */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="w-9 h-9 ml-2 rounded-full bg-[var(--primary)] flex items-center justify-center ring-[4px] ring-[var(--primary)]/20 cursor-pointer hover:ring-[var(--primary)]/40 transition-all shadow-sm outline-none border-none p-0">
-            <span className="text-[14px] font-bold text-white tracking-wide">{initials}</span>
+          <DropdownMenuTrigger className="w-9 h-9 ml-2 rounded-full bg-[var(--primary)] flex items-center justify-center ring-[4px] ring-[var(--primary)]/20 cursor-pointer hover:ring-[var(--primary)]/40 transition-all shadow-sm outline-none border-none p-0 overflow-hidden">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-[14px] font-bold text-white tracking-wide">{initials}</span>
+            )}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuGroup>

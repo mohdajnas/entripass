@@ -72,6 +72,19 @@ CREATE POLICY "Events: Owners can insert" ON events
 CREATE POLICY "Events: Public can view public events" ON events
   FOR SELECT USING (is_public = true);
 
+-- Allow public users to view child records of public events
+CREATE POLICY "TicketTypes: Public can view tickets of public events" ON ticket_types
+  FOR SELECT USING (EXISTS (SELECT 1 FROM events e WHERE e.id = ticket_types.event_id AND e.is_public = true));
+
+CREATE POLICY "FormFields: Public can view form fields of public events" ON form_fields
+  FOR SELECT USING (EXISTS (SELECT 1 FROM events e WHERE e.id = form_fields.event_id AND e.is_public = true));
+
+CREATE POLICY "Speakers: Public can view speakers of public events" ON speakers
+  FOR SELECT USING (EXISTS (SELECT 1 FROM events e WHERE e.id = speakers.event_id AND e.is_public = true));
+
+CREATE POLICY "Sponsors: Public can view sponsors of public events" ON sponsors
+  FOR SELECT USING (EXISTS (SELECT 1 FROM events e WHERE e.id = sponsors.event_id AND e.is_public = true));
+
 -- 4. Apply standard Event-based policies to all child tables
 -- Since all these tables have an `event_id`, we just check if the user can access that event.
 
