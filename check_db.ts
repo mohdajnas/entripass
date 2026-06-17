@@ -12,8 +12,31 @@ for (const line of lines) {
 const supabase = createClient(url, key);
 
 async function check() {
-  const { data: events } = await supabase.from('events').select('id, title, created_at').order('created_at', { ascending: false }).limit(3);
-  console.log('Events:', events);
+  const { data: events } = await supabase.from('events').select('id').limit(1);
+  if (!events || events.length === 0) {
+    console.log("No events found");
+    return;
+  }
+  const eventId = events[0].id;
+  console.log('Testing insert for event:', eventId);
+
+  const { data: newGuest, error } = await supabase
+    .from("guests")
+    .insert({
+      event_id: eventId,
+      name: "Test User",
+      email: "test@example.com",
+      status: "confirmed",
+      qr_code: "TEST_QR",
+      payment_status: "paid",
+      amount_paid: 0,
+    })
+    .select("*");
+
+  console.log('Insert Result:', newGuest);
+  if (error) {
+    console.error('Insert Error:', JSON.stringify(error, null, 2));
+  }
 }
 
 check();

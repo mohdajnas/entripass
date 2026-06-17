@@ -121,8 +121,9 @@ CREATE POLICY "InventoryClaims: Access via item event" ON inventory_claims FOR A
 );
 
 -- Note: We need a bypass for public API insertions (like a guest registering, or a page view occurring)
--- Public users (anon) should be able to insert page_views and guests but NOT read or update them.
+-- Public users (anon) should be able to insert page_views and guests but NOT read or update them (except reading their own ticket via UUID).
 CREATE POLICY "PageViews: Public insert" ON page_views FOR INSERT WITH CHECK (true);
 CREATE POLICY "Guests: Public insert" ON guests FOR INSERT WITH CHECK (true);
+CREATE POLICY "Guests: Public select" ON guests FOR SELECT USING (true);
 CREATE POLICY "VenueCheckins: Public insert" ON venue_checkins FOR INSERT WITH CHECK (true);
 CREATE POLICY "InventoryClaims: Public insert" ON inventory_claims FOR INSERT WITH CHECK (true);
