@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -65,6 +66,14 @@ export function GlassSidebar({
   setMobileMenuOpen: (m: boolean) => void
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+    router.push("/login");
+  };
 
   const basePath = eventId ? `/dashboard/events/${eventId}` : "/dashboard";
 
@@ -197,7 +206,9 @@ export function GlassSidebar({
             </>
           )}
         </button>
-        <button className={cn(
+        <button 
+          onClick={handleLogout}
+          className={cn(
           "flex items-center gap-3 py-2 rounded-xl text-sm text-white hover:text-red-400 hover:bg-[var(--sidebar-accent)] transition-all w-full",
           collapsed ? "justify-center px-0" : "px-3"
         )}>

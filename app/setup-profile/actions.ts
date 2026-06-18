@@ -45,7 +45,13 @@ export async function createProfile(formData: FormData) {
 
   if (error) {
     console.error("Profile insert error:", error);
-    return redirect("/setup-profile?message=Could not save profile");
+    let errorMessage = "Could not save profile";
+    if (error.code === "23505" && error.message?.includes("username_key")) {
+      errorMessage = "Username already exists. Please choose another one.";
+    } else {
+      errorMessage = error.message || "Could not save profile";
+    }
+    return redirect(`/setup-profile?message=${encodeURIComponent(errorMessage)}`);
   }
 
   revalidatePath("/dashboard");
