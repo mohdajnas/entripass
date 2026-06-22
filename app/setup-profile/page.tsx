@@ -22,6 +22,10 @@ export default async function SetupProfilePage({
   const defaultFullName = user.user_metadata?.full_name || "";
   const defaultAvatar = user.user_metadata?.avatar_url || "";
 
+  // Check if user needs to set a password (e.g. they logged in via Google and don't have an email provider)
+  const providers = user.app_metadata?.providers || [];
+  const needsPassword = !providers.includes("email");
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
       <div className="glass-card p-8 w-full max-w-lg animate-slide-up bg-white shadow-xl rounded-2xl border border-slate-200">
@@ -162,6 +166,31 @@ export default async function SetupProfilePage({
               />
             </div>
           </div>
+
+          {needsPassword && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-600 mb-1 block">Set Password (Required for Email Login)</label>
+                <Input
+                  type="password"
+                  name="password"
+                  required
+                  placeholder="Set a password"
+                  className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl h-11"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-600 mb-1 block">Confirm Password</label>
+                <Input
+                  type="password"
+                  name="confirmPassword"
+                  required
+                  placeholder="Confirm password"
+                  className="bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 rounded-xl h-11"
+                />
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="text-xs font-semibold text-slate-600 mb-1 block">Short Bio (Optional)</label>

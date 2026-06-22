@@ -24,6 +24,19 @@ export async function updateProfile(formData: FormData) {
   const state = formData.get("state") as string;
   const bio = formData.get("bio") as string;
   const avatarUrl = formData.get("avatarUrl") as string;
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (password) {
+    if (password !== confirmPassword) {
+      return { success: false, error: "Passwords do not match." };
+    }
+    const { error: passwordError } = await supabase.auth.updateUser({ password });
+    if (passwordError) {
+      console.error("Password update error:", passwordError);
+      return { success: false, error: passwordError.message };
+    }
+  }
 
   const dob = dobStr ? dobStr : null;
 

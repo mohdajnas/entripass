@@ -25,6 +25,23 @@ export async function createProfile(formData: FormData) {
   const state = formData.get("state") as string;
   const bio = formData.get("bio") as string;
   const avatarUrl = (formData.get("avatarUrl") || formData.get("customAvatarUrl") || "") as string;
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (password) {
+    if (password !== confirmPassword) {
+      return redirect("/setup-profile?message=Passwords do not match");
+    }
+
+    const { error: passwordError } = await supabase.auth.updateUser({
+      password: password,
+    });
+
+    if (passwordError) {
+      console.error("Update password error:", passwordError);
+      return redirect(`/setup-profile?message=${encodeURIComponent(passwordError.message)}`);
+    }
+  }
 
   // DOB validation / formatting (or leave as null if empty)
   const dob = dobStr ? dobStr : null;

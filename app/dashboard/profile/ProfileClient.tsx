@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   Edit2,
   Save,
-  X
+  X,
+  Shield
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -50,6 +51,8 @@ export function ProfileClient({ profile: initialProfile }: { profile: Profile })
   const [editState, setEditState] = useState(profile.state || "");
   const [editBio, setEditBio] = useState(profile.bio || "");
   const [editAvatarUrl, setEditAvatarUrl] = useState(profile.avatar_url || "");
+  const [editPassword, setEditPassword] = useState("");
+  const [editConfirmPassword, setEditConfirmPassword] = useState("");
 
   const handleCancel = () => {
     // Reset form states to current profile values
@@ -63,6 +66,8 @@ export function ProfileClient({ profile: initialProfile }: { profile: Profile })
     setEditState(profile.state || "");
     setEditBio(profile.bio || "");
     setEditAvatarUrl(profile.avatar_url || "");
+    setEditPassword("");
+    setEditConfirmPassword("");
     setErrorMessage("");
     setIsEditing(false);
   };
@@ -84,6 +89,16 @@ export function ProfileClient({ profile: initialProfile }: { profile: Profile })
     formData.append("bio", editBio);
     formData.append("avatarUrl", editAvatarUrl);
 
+    if (editPassword) {
+      if (editPassword !== editConfirmPassword) {
+        setErrorMessage("Passwords do not match.");
+        setIsSaving(false);
+        return;
+      }
+      formData.append("password", editPassword);
+      formData.append("confirmPassword", editConfirmPassword);
+    }
+
     try {
       const result = await updateProfile(formData);
       if (result.success) {
@@ -100,6 +115,8 @@ export function ProfileClient({ profile: initialProfile }: { profile: Profile })
           bio: editBio || null,
           avatar_url: editAvatarUrl || null,
         });
+        setEditPassword("");
+        setEditConfirmPassword("");
         setIsEditing(false);
       } else {
         setErrorMessage(result.error || "Failed to update profile.");
@@ -409,6 +426,41 @@ export function ProfileClient({ profile: initialProfile }: { profile: Profile })
               </div>
             </div>
           </div>
+
+          {/* Security Settings - Only visible when editing */}
+          {isEditing && (
+            <div className="glass-card bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6 mt-6">
+              <h3 className="text-lg font-bold text-slate-900 pb-3 border-b border-slate-100 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-emerald-600" /> Security
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+                    New Password (Optional)
+                  </span>
+                  <Input 
+                    type="password"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    placeholder="Leave blank to keep current"
+                    className="h-10 rounded-xl bg-slate-50 border-slate-200 focus:bg-white"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+                    Confirm New Password
+                  </span>
+                  <Input 
+                    type="password"
+                    value={editConfirmPassword}
+                    onChange={(e) => setEditConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    className="h-10 rounded-xl bg-slate-50 border-slate-200 focus:bg-white"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { login } from "../actions";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { SubmitButton } from "@/components/auth/SubmitButton";
 
 export default async function LoginPage({
   searchParams,
@@ -119,12 +120,12 @@ export default async function LoginPage({
               />
             </div>
 
-            <button
+            <SubmitButton
               formAction={login}
-              className="btn-gradient w-full py-3.5 rounded-xl text-sm font-semibold mt-4 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
+              className="btn-gradient w-full py-3.5 rounded-xl text-sm font-semibold mt-4 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all disabled:opacity-70"
             >
               Sign in to EntryPass
-            </button>
+            </SubmitButton>
           </form>
 
           <div className="relative my-8">
