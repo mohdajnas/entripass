@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { searchGuests, processCheckin, processBarcodeScan } from "./actions";
 import { createClient } from "@/utils/supabase/client";
+import { Scanner } from '@yudiel/react-qr-scanner';
 
 type CheckInResult = {
   type: "success" | "duplicate" | "invalid";
@@ -118,9 +119,8 @@ export default function CheckInPage() {
     setIsProcessing(false);
   };
 
-  const handleBarcodeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!barcodeInput.trim()) return;
+  const handleScan = async (code: string) => {
+    if (!code.trim() || isProcessing) return;
     if (!selectedVenue) {
       alert("Please select a venue first.");
       setBarcodeInput("");
@@ -128,13 +128,19 @@ export default function CheckInPage() {
     }
 
     setIsProcessing(true);
-    const res = await processBarcodeScan(eventId, selectedVenue, barcodeInput);
+    const res = await processBarcodeScan(eventId, selectedVenue, code);
     showResult(res as CheckInResult);
     setBarcodeInput(""); // clear scanner input
     setIsProcessing(false);
     
     // Refocus scanner
     barcodeInputRef.current?.focus();
+  };
+
+  const handleBarcodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!barcodeInput.trim()) return;
+    await handleScan(barcodeInput);
   };
 
   return (
@@ -221,14 +227,29 @@ export default function CheckInPage() {
               </div>
             )}
             
-            <div className="w-64 h-64 md:w-80 md:h-80 rounded-3xl border-4 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden transition-colors group-focus-within:border-emerald-300 group-focus-within:bg-emerald-50/30">
-              <Camera className="w-12 h-12 text-slate-300 mb-4 transition-colors group-focus-within:text-emerald-400" />
-              <p className="text-sm font-medium text-slate-500 text-center px-6">
-                Scan QR Code with <br/> USB Barcode Scanner
-              </p>
+            <div className="w-64 h-64 md:w-80 md:h-80 rounded-3xl border-4 border-dashed border-slate-200 flex flex-col items-center justify-center bg-slate-900 relative overflow-hidden transition-colors group-focus-within:border-emerald-300 group-focus-within:bg-slate-900">
+              <Scanner 
+                onScan={(detectedCodes) => {
+                  if (detectedCodes.length > 0) {
+                    handleScan(detectedCodes[0].rawValue);
+                  }
+                }}
+                formats={['qr_code']}
+                allowMultiple={true}
+                scanDelay={2000}
+                components={{
+                  onOff: true,
+                  torch: true,
+                  zoom: true,
+                  finder: true,
+                }}
+                styles={{
+                  container: { width: '100%', height: '100%' },
+                }}
+              />
               
               {/* Hidden Input for USB Barcode Scanners */}
-              <form onSubmit={handleBarcodeSubmit} className="absolute inset-0 opacity-0 cursor-default">
+              <form onSubmit={handleBarcodeSubmit} className="absolute inset-0 opacity-0 cursor-default z-10">
                 <input 
                   ref={barcodeInputRef}
                   value={barcodeInput}
@@ -240,7 +261,7 @@ export default function CheckInPage() {
               </form>
 
               {/* Animated scan line */}
-              <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 group-focus-within:animate-pulse" />
+              <div className="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent top-1/2 -translate-y-1/2 opacity-0 group-focus-within:opacity-100 group-focus-within:animate-pulse z-20 pointer-events-none" />
             </div>
             
             <p className="text-xs text-slate-400 font-medium mt-6 text-center">

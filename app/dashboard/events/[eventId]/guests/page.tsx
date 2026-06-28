@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
 import {
@@ -40,7 +41,7 @@ import {
   bulkUpdateStatus,
   deleteGuest,
   bulkUploadGuests,
-  sendMockEmail,
+  sendRealEmail,
 } from "./actions";
 
 const statusStyles: Record<string, string> = {
@@ -311,7 +312,7 @@ export default function GuestsPage() {
       .map((g) => g.email);
 
     try {
-      const res = await sendMockEmail(emailList, emailSubject, emailBody);
+      const res = await sendRealEmail(eventId as string, emailList, emailSubject, emailBody);
       if (res.success) {
         toast.success(`Email sent successfully to ${emailList.length} recipient(s)`);
         setActiveModal(null);
@@ -425,13 +426,15 @@ export default function GuestsPage() {
 
         const isMock = eventId.startsWith("evt-") || eventId === "evt_123";
         if (isMock) {
-          const newMockRows: Guest[] = parsedGuests.map((g, index) => ({
-            id: `guest-imported-${Date.now()}-${index}`,
-            name: g.name,
-            email: g.email,
-            phone: g.phone || null,
-            status: g.status,
-            qr_code: `QR-IMP-${Math.floor(Math.random() * 1000000)}`,
+          const newMockRows: Guest[] = parsedGuests.map((g, index) => {
+            const mockGuestId = `guest-imported-${Date.now()}-${index}`;
+            return {
+              id: mockGuestId,
+              name: g.name,
+              email: g.email,
+              phone: g.phone || null,
+              status: g.status,
+              qr_code: mockGuestId,
             checked_in_at: null,
             payment_status: g.payment_status,
             amount_paid: g.amount_paid,
@@ -439,8 +442,9 @@ export default function GuestsPage() {
             form_data: g.form_data,
             ticket_type_id: g.ticket_type_id || null,
             ticket_type_name: ticketTypes.find((t) => t.id === g.ticket_type_id)?.name || "Regular",
-          }));
-          setGuests((prev) => [...newMockRows, ...prev]);
+          };
+        });
+        setGuests((prev) => [...newMockRows, ...prev]);
           toast.success(`Successfully imported ${parsedGuests.length} guests (mock mode)`);
         } else {
           const res = await bulkUploadGuests(eventId, parsedGuests);
@@ -528,20 +532,20 @@ export default function GuestsPage() {
           <button
             onClick={handleCSVUploadClick}
             disabled={isUploading}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-white/60 dark:bg-black/10 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-black/5 hover:bg-slate-50 dark:hover:bg-black/20 transition-all font-medium"
+            className="btn-gradient flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-emerald-500/10 text-[#022c22]"
           >
             {isUploading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Upload className="w-4 h-4 text-emerald-500" />
+              <Upload className="w-4 h-4" />
             )}
             Import CSV
           </button>
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-white/60 dark:bg-black/10 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-black/5 hover:bg-slate-50 dark:hover:bg-black/20 transition-all font-medium"
+            className="btn-gradient flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md shadow-emerald-500/10 text-[#022c22]"
           >
-            <Download className="w-4 h-4 text-emerald-500" />
+            <Download className="w-4 h-4" />
             Export CSV
           </button>
         </div>
@@ -801,22 +805,22 @@ export default function GuestsPage() {
 
       {/* Guest Details Modal */}
       {activeModal === "details" && selectedGuestForDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-lg bg-white/95 dark:bg-slate-900/95 border border-slate-200/50 dark:border-slate-800/50 shadow-2xl rounded-2xl overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-lg glass-card shadow-2xl rounded-2xl overflow-hidden animate-scale-in">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl">
                   <User className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-950 dark:text-white">Guest Registration Details</h3>
+                  <h3 className="text-lg font-bold text-slate-950">Guest Registration Details</h3>
                   <p className="text-xs text-slate-500">ID: {selectedGuestForDetails.id}</p>
                 </div>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
-                className="p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors"
               >
                 <X className="w-4 h-4 text-slate-500" />
               </button>
@@ -825,9 +829,9 @@ export default function GuestsPage() {
             {/* Modal Body */}
             <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
               {/* Profile Card Summary */}
-              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
                 <div>
-                  <h4 className="text-md font-bold text-slate-900 dark:text-white">{selectedGuestForDetails.name}</h4>
+                  <h4 className="text-md font-bold text-slate-900">{selectedGuestForDetails.name}</h4>
                   <p className="text-xs text-slate-500">{selectedGuestForDetails.email}</p>
                   {selectedGuestForDetails.phone && (
                     <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
@@ -850,13 +854,13 @@ export default function GuestsPage() {
                   <p className="text-xs text-slate-400 flex items-center gap-1">
                     <QrCode className="w-3 h-3" /> QR Code Ref
                   </p>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{selectedGuestForDetails.qr_code}</p>
+                  <p className="text-sm font-semibold text-slate-800">{selectedGuestForDetails.qr_code}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-slate-400 flex items-center gap-1">
                     <DollarSign className="w-3 h-3" /> Amount Paid
                   </p>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 font-mono">
+                  <p className="text-sm font-semibold text-slate-800 font-mono">
                     ₹{selectedGuestForDetails.amount_paid} ({selectedGuestForDetails.payment_status})
                   </p>
                 </div>
@@ -864,7 +868,7 @@ export default function GuestsPage() {
                   <p className="text-xs text-slate-400 flex items-center gap-1">
                     <Calendar className="w-3 h-3" /> Registered On
                   </p>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  <p className="text-sm font-semibold text-slate-800">
                     {new Date(selectedGuestForDetails.registered_at).toLocaleString("en-IN", {
                       day: "numeric",
                       month: "short",
@@ -878,7 +882,7 @@ export default function GuestsPage() {
                   <p className="text-xs text-slate-400 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Checked In
                   </p>
-                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                  <p className="text-sm font-semibold text-slate-800">
                     {selectedGuestForDetails.checked_in_at
                       ? new Date(selectedGuestForDetails.checked_in_at).toLocaleString("en-IN", {
                           hour: "2-digit",
@@ -890,18 +894,18 @@ export default function GuestsPage() {
               </div>
 
               {/* Custom Form Fields */}
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <h5 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-1">
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <h5 className="text-sm font-semibold text-slate-900 flex items-center gap-1">
                   <Building2 className="w-4 h-4 text-emerald-500" /> Custom Form Responses
                 </h5>
                 {Object.keys(selectedGuestForDetails.form_data).length === 0 ? (
                   <p className="text-xs text-slate-500 italic">No custom form answers provided.</p>
                 ) : (
-                  <div className="bg-slate-50 dark:bg-slate-800/30 p-4 rounded-xl space-y-2.5 border border-slate-100 dark:border-slate-800">
+                  <div className="bg-slate-50 p-4 rounded-xl space-y-2.5 border border-slate-100">
                     {Object.entries(selectedGuestForDetails.form_data).map(([key, val]) => (
-                      <div key={key} className="flex justify-between items-center text-sm border-b border-slate-100 dark:border-slate-800 last:border-0 pb-1.5 last:pb-0">
+                      <div key={key} className="flex justify-between items-center text-sm border-b border-slate-100 last:border-0 pb-1.5 last:pb-0">
                         <span className="text-slate-500 capitalize">{key.replace(/_/g, " ")}:</span>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">{String(val)}</span>
+                        <span className="font-semibold text-slate-800">{String(val)}</span>
                       </div>
                     ))}
                   </div>
@@ -910,10 +914,10 @@ export default function GuestsPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-2 p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="flex justify-end gap-2 p-5 border-t border-slate-100 bg-slate-50/50">
               <button
                 onClick={() => setActiveModal(null)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
               >
                 Close
               </button>
@@ -924,22 +928,22 @@ export default function GuestsPage() {
 
       {/* Send Email Modal */}
       {activeModal === "email" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-lg bg-white/95 dark:bg-slate-900/95 border border-slate-200/50 dark:border-slate-800/50 shadow-2xl rounded-2xl overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-lg glass-card shadow-2xl rounded-2xl overflow-hidden animate-scale-in">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-950 dark:text-white font-serif">Compose Broadcast Email</h3>
+                  <h3 className="text-lg font-bold text-slate-950 font-serif">Compose Broadcast Email</h3>
                   <p className="text-xs text-slate-500">Sending to {emailTargetIds.length} guest(s)</p>
                 </div>
               </div>
               <button
                 onClick={() => setActiveModal(null)}
-                className="p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-slate-200/50 transition-colors"
               >
                 <X className="w-4 h-4 text-slate-500" />
               </button>
@@ -948,16 +952,16 @@ export default function GuestsPage() {
             {/* Modal Body */}
             <div className="p-6 space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Subject</label>
+                <label className="text-xs font-semibold text-slate-600">Subject</label>
                 <Input
                   value={emailSubject}
                   onChange={(e) => setEmailSubject(e.target.value)}
                   placeholder="Welcome to Techfed Kerala!"
-                  className="bg-black/5 border-black/5 text-slate-900 dark:text-white placeholder:text-slate-400 rounded-xl"
+                  className="bg-black/5 border-black/5 text-slate-900 placeholder:text-slate-400 rounded-xl"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Message</label>
+                <label className="text-xs font-semibold text-slate-600">Message</label>
                 <textarea
                   value={emailBody}
                   onChange={(e) => setEmailBody(e.target.value)}
@@ -966,17 +970,17 @@ export default function GuestsPage() {
 We are thrilled to welcome you. Here is your admission ticket:
 ..."
                   rows={8}
-                  className="w-full p-3 text-sm bg-black/5 border border-transparent text-slate-900 dark:text-white placeholder:text-slate-400 rounded-xl focus:outline-none focus:border-emerald-500/50 transition-colors resize-none"
+                  className="w-full p-3 text-sm bg-black/5 border border-transparent text-slate-900 placeholder:text-slate-400 rounded-xl focus:outline-none focus:border-emerald-500/50 transition-colors resize-none"
                 />
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end gap-2 p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="flex justify-end gap-2 p-5 border-t border-slate-100 bg-slate-50/50">
               <button
                 onClick={() => setActiveModal(null)}
                 disabled={isSendingEmail}
-                className="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors disabled:opacity-50"
               >
                 Discard
               </button>

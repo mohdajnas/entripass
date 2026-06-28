@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import nodemailer from "nodemailer";
 
 export async function updateGuestStatus(guestId: string, status: string) {
   const supabase = await createClient();
@@ -80,7 +81,7 @@ export async function bulkUploadGuests(
   const supabase = await createClient();
 
   const rowsToInsert = guests.map((g) => {
-    const qrCode = `QR_${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+    const guestId = crypto.randomUUID();
     return {
       event_id: eventId,
       name: g.name,
@@ -88,7 +89,8 @@ export async function bulkUploadGuests(
       phone: g.phone || null,
       ticket_type_id: g.ticket_type_id || null,
       status: g.status || "confirmed",
-      qr_code: qrCode,
+      id: guestId,
+      qr_code: guestId,
       payment_status: g.payment_status || (Number(g.amount_paid) > 0 ? "paid" : "paid"),
       amount_paid: g.amount_paid || 0,
       form_data: g.form_data || {},
@@ -106,9 +108,64 @@ export async function bulkUploadGuests(
   return { success: true };
 }
 
-export async function sendMockEmail(emails: string[], subject: string, body: string) {
-  // Mock sending email
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  console.log(`Sending email to ${emails.join(", ")}:\nSubject: ${subject}\nBody: ${body}`);
-  return { success: true };
+export async function sendRealEmail(eventId: string, emails: string[], subject: string, body: string) {
+  const supabase = await createClient();
+
+  const { data: templates, error } = await supabase
+    .from("email_templates")
+    .select("smtp_host, smtp_port, smtp_user, smtp_pass")
+    .eq("event_id", eventId)
+    .limit(1);
+
+  if (error || !templates || templates.length === 0) {
+    console.error("Error fetching SMTP config:", error);
+    return { success: false, error: "SMTP configuration not found for this event." };
+  }
+
+  const smtpConfig = templates[0];
+  
+  if (!smtpConfig.smtp_host || !smtpConfig.smtp_user || !smtpConfig.smtp_pass) {
+    return { success: false, error: "Incomplete SMTP configuration. Please configure it in the Communications tab." };
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host: smtpConfig.smtp_host,
+      port: smtpConfig.smtp_port || 587,
+      secure: smtpConfig.smtp_port === 465,
+      auth: {
+        user: smtpConfig.smtp_user,
+        pass: smtpConfig.smtp_pass,
+      },
+    });
+
+    const htmlWithFooter = `
+      <div style="font-family: system-ui, -apple-system, sans-serif; color: #1f2937; max-width: 600px; margin: 0 auto; line-height: 1.5;">
+        ${body}
+        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+          <p style="color: #6b7280; font-size: 12px; margin-bottom: 8px;">Powered By <strong>Entripass</strong></p>
+          <img src="cid:entripasslogo" alt="Entripass Logo" style="height: 24px; width: auto; opacity: 0.7;" />
+        </div>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"Event Team" <${smtpConfig.smtp_user}>`,
+      to: smtpConfig.smtp_user, 
+      bcc: emails,
+      subject: subject,
+      html: htmlWithFooter,
+      attachments: [{
+        filename: 'entripass-logo.png',
+        path: process.cwd() + '/public/ticket-branding/BACKUP-S-C.png',
+        cid: 'entripasslogo'
+      }]
+    });
+
+    console.log(`Successfully sent email to ${emails.length} guests.`);
+    return { success: true };
+  } catch (err: any) {
+    console.error("Error sending real email:", err);
+    return { success: false, error: err.message || "Failed to send email" };
+  }
 }

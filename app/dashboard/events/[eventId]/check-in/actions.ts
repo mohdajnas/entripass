@@ -12,7 +12,7 @@ export async function searchGuests(eventId: string, query: string) {
   
   const { data, error } = await supabase
     .from("guests")
-    .select("id, name, email, ticket_type, qr_code")
+    .select("id, name, email, qr_code, ticket_types(name)")
     .eq("event_id", eventId)
     .or(`name.ilike.${q},email.ilike.${q},qr_code.eq.${query.trim()}`)
     .limit(10);
@@ -21,7 +21,15 @@ export async function searchGuests(eventId: string, query: string) {
     return { success: false, error: error.message };
   }
 
-  return { success: true, guests: data };
+  const formattedGuests = data.map((g: any) => ({
+    id: g.id,
+    name: g.name,
+    email: g.email,
+    qr_code: g.qr_code,
+    ticket_type: g.ticket_types?.name || "Standard"
+  }));
+
+  return { success: true, guests: formattedGuests };
 }
 
 export async function processCheckin(eventId: string, venueId: string, guestId: string) {
@@ -30,7 +38,7 @@ export async function processCheckin(eventId: string, venueId: string, guestId: 
   // 1. Verify guest belongs to event
   const { data: guest, error: guestError } = await supabase
     .from("guests")
-    .select("id, name, ticket_type")
+    .select("id, name, ticket_types(name)")
     .eq("id", guestId)
     .eq("event_id", eventId)
     .single();
@@ -51,7 +59,7 @@ export async function processCheckin(eventId: string, venueId: string, guestId: 
     return { 
       type: "duplicate", 
       name: guest.name, 
-      ticketType: guest.ticket_type || "Standard",
+      ticketType: (guest.ticket_types as any)?.name || "Standard",
       time: new Date(existingCheckin.checked_in_at).toLocaleTimeString() 
     };
   }
@@ -72,7 +80,7 @@ export async function processCheckin(eventId: string, venueId: string, guestId: 
   return { 
     type: "success", 
     name: guest.name, 
-    ticketType: guest.ticket_type || "Standard",
+    ticketType: (guest.ticket_types as any)?.name || "Standard",
     time: new Date().toLocaleTimeString() 
   };
 }
