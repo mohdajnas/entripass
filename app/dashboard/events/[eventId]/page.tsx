@@ -12,6 +12,7 @@ import { QRCodeSVG } from "qrcode.react";
 interface LiveEvent {
   id: string;
   title: string;
+  slug: string | null;
   start_time: string | null;
   end_time: string | null;
   venue: string | null;
@@ -53,7 +54,7 @@ export default function EventOverviewPage() {
         // Fetch Event Details
         const { data: eventData, error: eventError } = await supabase
           .from("events")
-          .select("id, title, start_time, end_time, venue, max_capacity")
+          .select("id, title, slug, start_time, end_time, venue, max_capacity")
           .eq("id", eventId)
           .single();
 
@@ -161,7 +162,7 @@ export default function EventOverviewPage() {
   const displayGuests = isMock ? mockGuests.slice(0, 5) : liveGuests.slice(0, 5);
 
   const handleShare = () => {
-    const url = `${window.location.origin}/events/${event.id}`;
+    const url = `${window.location.origin}/events/${event.slug || event.id}`;
     navigator.clipboard.writeText(url);
     alert("Shareable registration link copied to clipboard!");
   };
@@ -212,7 +213,7 @@ export default function EventOverviewPage() {
 
                 <div className="bg-white p-3.5 rounded-2xl flex justify-center shadow-inner relative z-20 mx-auto w-fit">
                   <QRCodeSVG
-                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/events/${event.id}`}
+                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/events/${event.slug || event.id}`}
                     size={180}
                     level="H"
                     includeMargin={false}

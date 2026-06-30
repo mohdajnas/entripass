@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Mail, Send, Upload, Download, Image, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { getPostEventData, downloadAttendanceCsv } from "./actions";
+import { getPostEventData, downloadAttendanceCsv, sendPostThankYouEmails, sendPostSorryEmails } from "./actions";
 
 export default function PostEventPage() {
   const params = useParams();
@@ -44,11 +44,18 @@ export default function PostEventPage() {
     }
     
     setSendingThanks(true);
-    // Simulate batch sending
-    setTimeout(() => {
-      toast.success(`Successfully queued ${data.checkedInCount} Thank You emails!`);
+    try {
+      const res = await sendPostThankYouEmails(eventId);
+      if (res.success) {
+        toast.success(`Successfully sent ${res.count} Thank You emails!`);
+      } else {
+        toast.error("Failed to send: " + res.error);
+      }
+    } catch (e) {
+      toast.error("An error occurred while sending emails");
+    } finally {
       setSendingThanks(false);
-    }, 1500);
+    }
   };
 
   const handleSendSorry = async () => {
@@ -62,11 +69,18 @@ export default function PostEventPage() {
     }
 
     setSendingSorry(true);
-    // Simulate batch sending
-    setTimeout(() => {
-      toast.success(`Successfully queued ${data.noShowCount} Sorry emails!`);
+    try {
+      const res = await sendPostSorryEmails(eventId);
+      if (res.success) {
+        toast.success(`Successfully sent ${res.count} Sorry emails!`);
+      } else {
+        toast.error("Failed to send: " + res.error);
+      }
+    } catch (e) {
+      toast.error("An error occurred while sending emails");
+    } finally {
       setSendingSorry(false);
-    }, 1500);
+    }
   };
 
   const handleDownloadCsv = async () => {
@@ -186,7 +200,6 @@ export default function PostEventPage() {
           </button>
         </div>
       </div>
-
       {/* Media upload */}
       <div className="glass-card p-6">
         <div className="flex items-center justify-between mb-4">

@@ -42,12 +42,11 @@ export async function registerGuest(input: RegisterGuestInput) {
 
   // Trigger Automated Confirmation Email
   try {
-    const { data: template } = await supabase
-      .from("email_templates")
-      .select("subject, body_html, is_active, include_ticket")
-      .eq("event_id", input.eventId)
-      .eq("trigger_type", "confirmation")
-      .single();
+    const { data: template } = await supabase.rpc("get_email_template_secure", {
+      p_event_id: input.eventId,
+      p_trigger_type: "confirmation",
+      p_secret: "entripass-internal-secret-8842"
+    });
 
     if (template && template.is_active) {
        // Fetch event title for variable replacement
@@ -67,15 +66,18 @@ export async function registerGuest(input: RegisterGuestInput) {
          .replace(/{{event_name}}/g, eventName);
 
        if (template.include_ticket) {
+          const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://entrypass.sociup.in";
+          const ticketUrl = `${siteUrl}/tickets/${guestId}`;
           const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${guestId}`;
           finalBody += `<br><br><div style="padding: 24px; border: 2px dashed #a3e635; border-radius: 12px; text-align: center; margin-top: 20px; background-color: #f8fafc;">
             <h3 style="margin: 0 0 16px 0; color: #022c22; font-size: 20px;">Your Event Ticket</h3>
             <img src="${qrUrl}" alt="Ticket QR Code" style="width: 200px; height: 200px; margin: 0 auto; display: block; border-radius: 8px;" />
             <p style="font-size: 18px; font-weight: bold; margin: 16px 0 8px 0; color: #0b1a10; word-break: break-all;">${guestId}</p>
-            <p style="font-size: 13px; color: #71717a; margin: 0;">Present this QR code at the entrance to check in.</p>
+            <p style="font-size: 13px; color: #71717a; margin: 0 0 20px 0;">Present this QR code at the entrance to check in.</p>
+            <a href="${ticketUrl}" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 14px;">View & Download Full Ticket</a>
           </div>`;
        }
-       await sendRealEmail(input.eventId, [input.email], finalSubject, finalBody);
+       await sendRealEmail(input.eventId, [input.email], finalSubject, finalBody, "confirmation", [guestId]);
     }
   } catch (err) {
     console.error("Failed to send automated confirmation email:", err);

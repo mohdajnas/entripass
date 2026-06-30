@@ -95,12 +95,18 @@ export default function PublicEventPage() {
 
       const supabase = createClient();
       try {
-        // Fetch Event Details
-        const { data: eventData, error: eventError } = await supabase
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId);
+        let query = supabase
           .from("events")
-          .select("id, title, description, start_time, end_time, venue, map_link, is_online, tags, banner_url, poster_url, show_speakers")
-          .eq("id", eventId)
-          .single();
+          .select("id, title, description, start_time, end_time, venue, map_link, is_online, tags, banner_url, poster_url, show_speakers, slug");
+        
+        if (isUuid) {
+          query = query.eq("id", eventId);
+        } else {
+          query = query.eq("slug", eventId);
+        }
+
+        const { data: eventData, error: eventError } = await query.single();
 
         if (eventError || !eventData) {
           console.error("Error fetching event details:", eventError);
@@ -108,32 +114,34 @@ export default function PublicEventPage() {
           return;
         }
 
+        const actualEventId = eventData.id;
+
         // Fetch Ticket Types
         const { data: ticketTypesData } = await supabase
           .from("ticket_types")
           .select("id, name, price, description, capacity, is_visible")
-          .eq("event_id", eventId)
+          .eq("event_id", actualEventId)
           .order("sort_order", { ascending: true });
 
         // Fetch Custom Form Fields
         const { data: formFieldsData } = await supabase
           .from("form_fields")
           .select("id, field_type, label, placeholder, is_required")
-          .eq("event_id", eventId)
+          .eq("event_id", actualEventId)
           .order("sort_order", { ascending: true });
 
         // Fetch Speakers
         const { data: speakersData } = await supabase
           .from("speakers")
           .select("id, name, bio, photo_url, designation, company, social_url")
-          .eq("event_id", eventId)
+          .eq("event_id", actualEventId)
           .order("name", { ascending: true });
 
         // Fetch Sponsors
         const { data: sponsorsData } = await supabase
           .from("sponsors")
           .select("id, name, logo_url, website_url, tier")
-          .eq("event_id", eventId)
+          .eq("event_id", actualEventId)
           .order("name", { ascending: true });
 
         setLiveEvent(eventData);

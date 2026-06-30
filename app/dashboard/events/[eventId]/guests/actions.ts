@@ -108,23 +108,49 @@ export async function bulkUploadGuests(
   return { success: true };
 }
 
-export async function sendRealEmail(eventId: string, emails: string[], subject: string, body: string) {
+export async function sendRealEmail(
+  eventId: string,
+  emails: string[],
+  subject: string,
+  body: string,
+  triggerType?: string,
+  guestIds?: string[]
+) {
   const supabase = await createClient();
 
-  const { data: templates, error } = await supabase
-    .from("email_templates")
-    .select("smtp_host, smtp_port, smtp_user, smtp_pass")
-    .eq("event_id", eventId)
-    .limit(1);
+  const { data: smtpConfig, error } = await supabase.rpc("get_smtp_config_secure", {
+    p_event_id: eventId,
+    p_secret: "entripass-internal-secret-8842"
+  });
 
-  if (error || !templates || templates.length === 0) {
+  if (error || !smtpConfig) {
     console.error("Error fetching SMTP config:", error);
+    if (triggerType && guestIds && guestIds.length > 0) {
+      const logs = guestIds.map((id) => ({
+        event_id: eventId,
+        guest_id: id,
+        channel: "email",
+        trigger_type: triggerType,
+        status: "failed",
+        sent_at: new Date().toISOString(),
+      }));
+      await supabase.from("message_logs").insert(logs);
+    }
     return { success: false, error: "SMTP configuration not found for this event." };
   }
 
-  const smtpConfig = templates[0];
-  
   if (!smtpConfig.smtp_host || !smtpConfig.smtp_user || !smtpConfig.smtp_pass) {
+    if (triggerType && guestIds && guestIds.length > 0) {
+      const logs = guestIds.map((id) => ({
+        event_id: eventId,
+        guest_id: id,
+        channel: "email",
+        trigger_type: triggerType,
+        status: "failed",
+        sent_at: new Date().toISOString(),
+      }));
+      await supabase.from("message_logs").insert(logs);
+    }
     return { success: false, error: "Incomplete SMTP configuration. Please configure it in the Communications tab." };
   }
 
@@ -139,12 +165,15 @@ export async function sendRealEmail(eventId: string, emails: string[], subject: 
       },
     });
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://entrypass.sociup.in";
+    const logoUrl = `${siteUrl}/ticket-branding/BACKUP-S-C.png`;
+
     const htmlWithFooter = `
       <div style="font-family: system-ui, -apple-system, sans-serif; color: #1f2937; max-width: 600px; margin: 0 auto; line-height: 1.5;">
         ${body}
         <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
           <p style="color: #6b7280; font-size: 12px; margin-bottom: 8px;">Powered By <strong>Entripass</strong></p>
-          <img src="cid:entripasslogo" alt="Entripass Logo" style="height: 24px; width: auto; opacity: 0.7;" />
+          <img src="${logoUrl}" alt="Entripass Logo" style="height: 24px; width: auto; opacity: 0.7;" />
         </div>
       </div>
     `;
@@ -155,17 +184,82 @@ export async function sendRealEmail(eventId: string, emails: string[], subject: 
       bcc: emails,
       subject: subject,
       html: htmlWithFooter,
-      attachments: [{
-        filename: 'entripass-logo.png',
-        path: process.cwd() + '/public/ticket-branding/BACKUP-S-C.png',
-        cid: 'entripasslogo'
-      }]
     });
 
     console.log(`Successfully sent email to ${emails.length} guests.`);
+
+    if (triggerType && guestIds && guestIds.length > 0) {
+      const logs = guestIds.map((id) => ({
+        event_id: eventId,
+        guest_id: id,
+        channel: "email",
+        trigger_type: triggerType,
+        status: "sent",
+        sent_at: new Date().toISOString(),
+      }));
+      await supabase.from("message_logs").insert(logs);
+    }
+
     return { success: true };
   } catch (err: any) {
     console.error("Error sending real email:", err);
+    if (triggerType && guestIds && guestIds.length > 0) {
+      const logs = guestIds.map((id) => ({
+        event_id: eventId,
+        guest_id: id,
+        channel: "email",
+        trigger_type: triggerType,
+        status: "failed",
+        sent_at: new Date().toISOString(),
+      }));
+      await supabase.from("message_logs").insert(logs);
+    }
     return { success: false, error: err.message || "Failed to send email" };
   }
+}
+
+export async function sendInvitationEmails(eventId: string, guestIds: string[]) {
+  const supabase = await createClient();
+
+  const { data: template } = await supabase
+    .from("email_templates")
+    .select("subject, body_html, is_active, include_ticket")
+    .eq("event_id", eventId)
+    .eq("trigger_type", "invitation")
+    .single();
+
+  if (!template || !template.is_active) {
+    return { success: false, error: "Invitation template is inactive or not found." };
+  }
+
+  const { data: eventData } = await supabase.from("events").select("title").eq("id", eventId).single();
+  const eventName = eventData?.title || "our event";
+
+  const { data: guests } = await supabase.from("guests").select("id, name, email").in("id", guestIds);
+  if (!guests || guests.length === 0) return { success: false, error: "No guests found." };
+
+  const emailPromises = guests.filter((g) => g.email).map(async (guest) => {
+    let finalSubject = template.subject.replace(/{{name}}/g, guest.name).replace(/{{event_name}}/g, eventName);
+    let finalBody = template.body_html.replace(/{{name}}/g, guest.name).replace(/{{event_name}}/g, eventName);
+
+    if (template.include_ticket) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://entrypass.sociup.in";
+      const ticketUrl = `${siteUrl}/tickets/${guest.id}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${guest.id}`;
+      finalBody += `<br><br><div style="padding: 24px; border: 2px dashed #a3e635; border-radius: 12px; text-align: center; margin-top: 20px; background-color: #f8fafc;">
+        <h3 style="margin: 0 0 16px 0; color: #022c22; font-size: 20px;">Your Event Ticket</h3>
+        <img src="${qrUrl}" alt="Ticket QR Code" style="width: 200px; height: 200px; margin: 0 auto; display: block; border-radius: 8px;" />
+        <p style="font-size: 18px; font-weight: bold; margin: 16px 0 8px 0; color: #0b1a10; word-break: break-all;">${guest.id}</p>
+        <p style="font-size: 13px; color: #71717a; margin: 0 0 20px 0;">Present this QR code at the entrance to check in.</p>
+        <a href="${ticketUrl}" style="display: inline-block; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; font-weight: bold; border-radius: 6px; font-size: 14px;">View & Download Full Ticket</a>
+      </div>`;
+    }
+
+    return sendRealEmail(eventId, [guest.email], finalSubject, finalBody, "invitation", [guest.id]);
+  });
+
+  const results = await Promise.allSettled(emailPromises);
+  const successCount = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
+
+  return { success: true, count: successCount };
 }

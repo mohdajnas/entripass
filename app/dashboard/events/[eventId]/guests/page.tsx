@@ -42,6 +42,7 @@ import {
   deleteGuest,
   bulkUploadGuests,
   sendRealEmail,
+  sendInvitationEmails,
 } from "./actions";
 
 const statusStyles: Record<string, string> = {
@@ -109,6 +110,7 @@ export default function GuestsPage() {
   const [emailBody, setEmailBody] = useState("");
   const [emailTargetIds, setEmailTargetIds] = useState<string[]>([]);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isSendingInvitations, setIsSendingInvitations] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   // Pagination
@@ -322,6 +324,26 @@ export default function GuestsPage() {
       toast.error("Failed to send email: " + message);
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  const handleSendInvitations = async () => {
+    const ids = Array.from(selectedGuests);
+    if (ids.length === 0) return;
+    
+    setIsSendingInvitations(true);
+    try {
+      const res = await sendInvitationEmails(eventId, ids);
+      if (res.success) {
+        toast.success(`Successfully sent ${res.count} invitation emails!`);
+        setSelectedGuests(new Set());
+      } else {
+        toast.error("Failed to send invitations: " + res.error);
+      }
+    } catch (e: unknown) {
+      toast.error("An error occurred while sending invitations.");
+    } finally {
+      setIsSendingInvitations(false);
     }
   };
 
@@ -622,11 +644,19 @@ export default function GuestsPage() {
               Approve
             </button>
             <button
+              onClick={handleSendInvitations}
+              disabled={isSendingInvitations}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-500/20 text-violet-700 dark:text-violet-300 border border-violet-500/20 hover:bg-violet-500/30 transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSendingInvitations ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+              Send Invitations
+            </button>
+            <button
               onClick={() => triggerEmailModal(Array.from(selectedGuests))}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/20 hover:bg-blue-500/30 transition-all flex items-center gap-1"
             >
               <Mail className="w-3.5 h-3.5" />
-              Send Email
+              Custom Email
             </button>
             <button
               onClick={handleBulkCancel}
