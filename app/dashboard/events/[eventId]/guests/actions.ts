@@ -179,8 +179,11 @@ export async function sendRealEmail(
       </div>
     `;
 
+    const { data: eventData } = await supabase.from("events").select("title").eq("id", eventId).single();
+    const senderName = eventData?.title || "Event Team";
+
     await transporter.sendMail({
-      from: `"Event Team" <${smtpConfig.smtp_user}>`,
+      from: `"${senderName}" <${smtpConfig.smtp_user}>`,
       to: smtpConfig.smtp_user, 
       bcc: emails,
       subject: subject,
