@@ -77,7 +77,6 @@ export default function PublicEventPage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [checkoutName, setCheckoutName] = useState("");
   const [checkoutEmail, setCheckoutEmail] = useState("");
-  const [checkoutPhone, setCheckoutPhone] = useState("");
   const [customFieldsData, setCustomFieldsData] = useState<Record<string, string>>({});
   const [submittingRegistration, setSubmittingRegistration] = useState(false);
   const [checkoutError, setCheckoutError] = useState("");
@@ -281,7 +280,6 @@ export default function PublicEventPage() {
         ticketTypeId: selectedTicketId,
         name: checkoutName,
         email: checkoutEmail,
-        phone: checkoutPhone || undefined,
         formData: customFieldsData,
         amountPaid: selectedTicket?.price || 0,
       });
@@ -540,7 +538,7 @@ export default function PublicEventPage() {
             
             <h3 className="text-2xl font-bold text-slate-900 mb-2">Checkout Details</h3>
             <p className="text-sm text-slate-500 mb-6">
-              You are booking a **{selectedTicket?.name}** ticket {selectedTicket?.price === 0 ? "(Free)" : `for ₹${selectedTicket?.price}`}
+              You are booking a <span className="font-bold">{selectedTicket?.name}</span> ticket {selectedTicket?.price === 0 ? "(Free)" : `for ₹${selectedTicket?.price}`}
             </p>
 
             {checkoutError && (
@@ -573,16 +571,7 @@ export default function PublicEventPage() {
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-slate-600 mb-1.5 block">Phone Number (Optional)</label>
-                <Input
-                  type="tel"
-                  value={checkoutPhone}
-                  onChange={(e) => setCheckoutPhone(e.target.value)}
-                  placeholder="e.g. +91 98765 43210"
-                  className="bg-slate-50 border-slate-200 text-slate-900 rounded-xl h-11"
-                />
-              </div>
+
 
               {/* Dynamic Custom Registration Fields */}
               {liveFields.length > 0 && (
