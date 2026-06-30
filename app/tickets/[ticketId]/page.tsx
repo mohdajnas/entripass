@@ -500,7 +500,7 @@ export default function ViewTicketPage() {
         ) : (
           /* DEFAULT CLEAN GLASS TICKET DESIGN */
           <div className="relative group perspective-1000">
-            <div className="relative transform-style-3d transition-transform duration-500 rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-xl">
+            <div ref={ticketRef} className="relative transform-style-3d transition-transform duration-500 rounded-3xl overflow-hidden bg-white border border-slate-200 shadow-xl">
               
               {/* Header */}
               <div className="p-6 border-b border-slate-100 border-dashed relative">
