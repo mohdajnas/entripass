@@ -49,21 +49,40 @@ export async function registerGuest(input: RegisterGuestInput) {
     });
 
     if (template && template.is_active) {
-       // Fetch event title for variable replacement
        const { data: eventData } = await supabase
          .from("events")
-         .select("title")
+         .select("title, start_time")
          .eq("id", input.eventId)
          .single();
        const eventName = eventData?.title || "our event";
+       const eventDate = eventData?.start_time 
+         ? new Date(eventData.start_time).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+         : "TBD";
+
+       const { data: ticketTypeData } = await supabase
+         .from("ticket_types")
+         .select("name")
+         .eq("id", input.ticketTypeId)
+         .single();
+       const ticketTypeName = ticketTypeData?.name || "General Admission";
+
+       const checkinTime = "Not checked in";
 
        let finalSubject = template.subject
-         .replace(/{{name}}/g, input.name)
-         .replace(/{{event_name}}/g, eventName);
+         .replace(/{{name}}/g, input.name || "")
+         .replace(/{{email}}/g, input.email || "")
+         .replace(/{{event_name}}/g, eventName)
+         .replace(/{{event_date}}/g, eventDate)
+         .replace(/{{ticket_type}}/g, ticketTypeName)
+         .replace(/{{checkin_time}}/g, checkinTime);
 
        let finalBody = template.body_html
-         .replace(/{{name}}/g, input.name)
-         .replace(/{{event_name}}/g, eventName);
+         .replace(/{{name}}/g, input.name || "")
+         .replace(/{{email}}/g, input.email || "")
+         .replace(/{{event_name}}/g, eventName)
+         .replace(/{{event_date}}/g, eventDate)
+         .replace(/{{ticket_type}}/g, ticketTypeName)
+         .replace(/{{checkin_time}}/g, checkinTime);
 
        if (template.include_ticket) {
           const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://entrypass.sociup.in";

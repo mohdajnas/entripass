@@ -107,7 +107,7 @@ export async function sendPostThankYouEmails(eventId: string) {
   // Get checked-in guests
   const { data: guests, error } = await supabase
     .from("guests")
-    .select("id, name, email")
+    .select("id, name, email, checked_in_at, ticket_types(name)")
     .eq("event_id", eventId)
     .eq("status", "checked_in");
 
@@ -115,15 +115,37 @@ export async function sendPostThankYouEmails(eventId: string) {
     return { success: false, error: "No checked-in guests found" };
   }
 
-  const { data: eventData } = await supabase.from("events").select("title").eq("id", eventId).single();
+  const { data: eventData } = await supabase.from("events").select("title, start_time").eq("id", eventId).single();
   const eventName = eventData?.title || "our event";
+  const eventDate = eventData?.start_time 
+    ? new Date(eventData.start_time).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : "TBD";
 
   // Send emails individually to support variable replacement (name)
   let sentCount = 0;
   for (const guest of guests) {
     if (!guest.email) continue;
-    let finalSubject = template.subject.replace(/{{name}}/g, guest.name || "").replace(/{{event_name}}/g, eventName);
-    let finalBody = template.body_html.replace(/{{name}}/g, guest.name || "").replace(/{{event_name}}/g, eventName);
+    
+    const ticketTypeName = (guest as any).ticket_types?.name || "General Admission";
+    const checkinTime = (guest as any).checked_in_at 
+      ? new Date((guest as any).checked_in_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) 
+      : "Not checked in";
+
+    let finalSubject = template.subject
+      .replace(/{{name}}/g, guest.name || "")
+      .replace(/{{email}}/g, guest.email || "")
+      .replace(/{{event_name}}/g, eventName)
+      .replace(/{{event_date}}/g, eventDate)
+      .replace(/{{ticket_type}}/g, ticketTypeName)
+      .replace(/{{checkin_time}}/g, checkinTime);
+
+    let finalBody = template.body_html
+      .replace(/{{name}}/g, guest.name || "")
+      .replace(/{{email}}/g, guest.email || "")
+      .replace(/{{event_name}}/g, eventName)
+      .replace(/{{event_date}}/g, eventDate)
+      .replace(/{{ticket_type}}/g, ticketTypeName)
+      .replace(/{{checkin_time}}/g, checkinTime);
 
     try {
       await sendRealEmail(eventId, [guest.email], finalSubject, finalBody, "post_thankyou", [guest.id]);
@@ -157,7 +179,7 @@ export async function sendPostSorryEmails(eventId: string) {
   // Get no-show guests
   const { data: guests, error } = await supabase
     .from("guests")
-    .select("id, name, email")
+    .select("id, name, email, checked_in_at, ticket_types(name)")
     .eq("event_id", eventId)
     .eq("status", "registered");
 
@@ -165,14 +187,34 @@ export async function sendPostSorryEmails(eventId: string) {
     return { success: false, error: "No no-show guests found" };
   }
 
-  const { data: eventData } = await supabase.from("events").select("title").eq("id", eventId).single();
+  const { data: eventData } = await supabase.from("events").select("title, start_time").eq("id", eventId).single();
   const eventName = eventData?.title || "our event";
+  const eventDate = eventData?.start_time 
+    ? new Date(eventData.start_time).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : "TBD";
 
   let sentCount = 0;
   for (const guest of guests) {
     if (!guest.email) continue;
-    let finalSubject = template.subject.replace(/{{name}}/g, guest.name || "").replace(/{{event_name}}/g, eventName);
-    let finalBody = template.body_html.replace(/{{name}}/g, guest.name || "").replace(/{{event_name}}/g, eventName);
+
+    const ticketTypeName = (guest as any).ticket_types?.name || "General Admission";
+    const checkinTime = "Not checked in";
+
+    let finalSubject = template.subject
+      .replace(/{{name}}/g, guest.name || "")
+      .replace(/{{email}}/g, guest.email || "")
+      .replace(/{{event_name}}/g, eventName)
+      .replace(/{{event_date}}/g, eventDate)
+      .replace(/{{ticket_type}}/g, ticketTypeName)
+      .replace(/{{checkin_time}}/g, checkinTime);
+
+    let finalBody = template.body_html
+      .replace(/{{name}}/g, guest.name || "")
+      .replace(/{{email}}/g, guest.email || "")
+      .replace(/{{event_name}}/g, eventName)
+      .replace(/{{event_date}}/g, eventDate)
+      .replace(/{{ticket_type}}/g, ticketTypeName)
+      .replace(/{{checkin_time}}/g, checkinTime);
 
     try {
       await sendRealEmail(eventId, [guest.email], finalSubject, finalBody, "post_sorry", [guest.id]);

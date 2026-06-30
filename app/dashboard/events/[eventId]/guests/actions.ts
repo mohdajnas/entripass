@@ -166,7 +166,8 @@ export async function sendRealEmail(
     });
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://entrypass.sociup.in";
-    const logoUrl = `${siteUrl}/ticket-branding/BACKUP-S-C.png`;
+    // Always use the public production URL for the logo to avoid broken images in email clients when testing locally
+    const logoUrl = "https://entrypass.sociup.in/ticket-branding/BACKUP-S-C.png";
 
     const htmlWithFooter = `
       <div style="font-family: system-ui, -apple-system, sans-serif; color: #1f2937; max-width: 600px; margin: 0 auto; line-height: 1.5;">
@@ -232,15 +233,36 @@ export async function sendInvitationEmails(eventId: string, guestIds: string[]) 
     return { success: false, error: "Invitation template is inactive or not found." };
   }
 
-  const { data: eventData } = await supabase.from("events").select("title").eq("id", eventId).single();
+  const { data: eventData } = await supabase.from("events").select("title, start_time").eq("id", eventId).single();
   const eventName = eventData?.title || "our event";
+  const eventDate = eventData?.start_time 
+    ? new Date(eventData.start_time).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : "TBD";
 
-  const { data: guests } = await supabase.from("guests").select("id, name, email").in("id", guestIds);
+  const { data: guests } = await supabase.from("guests").select("id, name, email, checked_in_at, ticket_types(name)").in("id", guestIds);
   if (!guests || guests.length === 0) return { success: false, error: "No guests found." };
 
   const emailPromises = guests.filter((g) => g.email).map(async (guest) => {
-    let finalSubject = template.subject.replace(/{{name}}/g, guest.name).replace(/{{event_name}}/g, eventName);
-    let finalBody = template.body_html.replace(/{{name}}/g, guest.name).replace(/{{event_name}}/g, eventName);
+    const ticketTypeName = (guest.ticket_types as any)?.name || "General Admission";
+    const checkinTime = guest.checked_in_at 
+      ? new Date(guest.checked_in_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) 
+      : "Not checked in";
+
+    let finalSubject = template.subject
+      .replace(/{{name}}/g, guest.name || "")
+      .replace(/{{email}}/g, guest.email || "")
+      .replace(/{{event_name}}/g, eventName)
+      .replace(/{{event_date}}/g, eventDate)
+      .replace(/{{ticket_type}}/g, ticketTypeName)
+      .replace(/{{checkin_time}}/g, checkinTime);
+
+    let finalBody = template.body_html
+      .replace(/{{name}}/g, guest.name || "")
+      .replace(/{{email}}/g, guest.email || "")
+      .replace(/{{event_name}}/g, eventName)
+      .replace(/{{event_date}}/g, eventDate)
+      .replace(/{{ticket_type}}/g, ticketTypeName)
+      .replace(/{{checkin_time}}/g, checkinTime);
 
     if (template.include_ticket) {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://entrypass.sociup.in";

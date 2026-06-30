@@ -39,7 +39,7 @@ export async function processCheckin(eventId: string, venueId: string, guestId: 
   // 1. Verify guest belongs to event
   const { data: guest, error: guestError } = await supabase
     .from("guests")
-    .select("id, name, email, ticket_types(name)")
+    .select("id, name, email, status, ticket_types(name)")
     .eq("id", guestId)
     .eq("event_id", eventId)
     .single();
@@ -90,18 +90,32 @@ export async function processCheckin(eventId: string, venueId: string, guestId: 
     if (template && template.is_active && guest.email) {
        const { data: eventData } = await supabase
          .from("events")
-         .select("title")
+         .select("title, start_time")
          .eq("id", eventId)
          .single();
        const eventName = eventData?.title || "our event";
+       const eventDate = eventData?.start_time 
+         ? new Date(eventData.start_time).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+         : "TBD";
+
+       const ticketTypeName = (guest.ticket_types as any)?.name || "General Admission";
+       const checkinTime = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
        let finalSubject = template.subject
-         .replace(/{{name}}/g, guest.name)
-         .replace(/{{event_name}}/g, eventName);
+         .replace(/{{name}}/g, guest.name || "")
+         .replace(/{{email}}/g, guest.email || "")
+         .replace(/{{event_name}}/g, eventName)
+         .replace(/{{event_date}}/g, eventDate)
+         .replace(/{{ticket_type}}/g, ticketTypeName)
+         .replace(/{{checkin_time}}/g, checkinTime);
 
        let finalBody = template.body_html
-         .replace(/{{name}}/g, guest.name)
-         .replace(/{{event_name}}/g, eventName);
+         .replace(/{{name}}/g, guest.name || "")
+         .replace(/{{email}}/g, guest.email || "")
+         .replace(/{{event_name}}/g, eventName)
+         .replace(/{{event_date}}/g, eventDate)
+         .replace(/{{ticket_type}}/g, ticketTypeName)
+         .replace(/{{checkin_time}}/g, checkinTime);
 
        if (template.include_ticket) {
           const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://entrypass.sociup.in";
