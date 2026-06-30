@@ -638,7 +638,7 @@ export default function GuestsPage() {
           <div className="flex gap-2">
             <button
               onClick={handleBulkApprove}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500/30 transition-all flex items-center gap-1"
+              className="btn-gradient flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm text-[#022c22] transition-all"
             >
               <Check className="w-3.5 h-3.5" />
               Approve
@@ -646,21 +646,21 @@ export default function GuestsPage() {
             <button
               onClick={handleSendInvitations}
               disabled={isSendingInvitations}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-500/20 text-violet-700 dark:text-violet-300 border border-violet-500/20 hover:bg-violet-500/30 transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-gradient flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm text-[#022c22] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSendingInvitations ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
               Send Invitations
             </button>
             <button
               onClick={() => triggerEmailModal(Array.from(selectedGuests))}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/20 hover:bg-blue-500/30 transition-all flex items-center gap-1"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition-all"
             >
               <Mail className="w-3.5 h-3.5" />
               Custom Email
             </button>
             <button
               onClick={handleBulkCancel}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/20 hover:bg-red-500/30 transition-all flex items-center gap-1"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 transition-all"
             >
               <X className="w-3.5 h-3.5" />
               Cancel
