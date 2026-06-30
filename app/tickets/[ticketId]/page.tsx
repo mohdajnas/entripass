@@ -163,7 +163,6 @@ export default function ViewTicketPage() {
     try {
       toast.loading("Generating your ticket...", { id: "download" });
       const dataUrl = await toPng(ticketRef.current, {
-        cacheBust: true,
         pixelRatio: 4, // ultra high quality
       });
       const link = document.createElement("a");
@@ -354,16 +353,21 @@ export default function ViewTicketPage() {
                 ticketDesign.mode === "canvas" && ticketDesign.backgroundType === "gradient" ? ticketDesign.backgroundValue : ""
               }`}
               style={{
-                backgroundImage:
-                  ticketDesign.backgroundType === "image" 
-                    ? `url(${ticketDesign.backgroundValue})` 
-                    : undefined,
+                backgroundImage: undefined,
                 backgroundColor:
                   ticketDesign.backgroundType === "color" ? ticketDesign.backgroundValue : undefined,
                 aspectRatio: ticketDesign.backgroundType === "image" && bgAspectRatio ? String(bgAspectRatio) : (ticketDesign.canvasFormat === "badge" ? "400 / 600" : "800 / 320"),
                 height: "auto",
               }}
             >
+              {ticketDesign.backgroundType === "image" && (
+                <img 
+                  src={ticketDesign.backgroundValue} 
+                  alt="Ticket Background" 
+                  crossOrigin="anonymous" 
+                  className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none" 
+                />
+              )}
               {/* circular cutout notches for Notch Preset */}
               {ticketDesign.mode === "canvas" && ticketDesign.canvasFormat === "notch" && (
                 <>
