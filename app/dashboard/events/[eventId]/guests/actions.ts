@@ -173,8 +173,10 @@ export async function sendRealEmail(
       <div style="font-family: system-ui, -apple-system, sans-serif; color: #1f2937; max-width: 600px; margin: 0 auto; line-height: 1.5;">
         ${body}
         <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
-          <p style="color: #6b7280; font-size: 12px; margin-bottom: 8px;">Powered By <strong>Entripass</strong></p>
-          <img src="${logoUrl}" alt="Entripass Logo" style="height: 24px; width: auto; opacity: 0.7;" />
+          <a href="https://entrypass.sociup.in" style="text-decoration: none; display: inline-block;">
+            <p style="color: #6b7280; font-size: 12px; margin-bottom: 8px;">Powered By <strong style="color: #4b5563;">Entripass</strong></p>
+            <img src="${logoUrl}" alt="Entripass Logo" style="height: 24px; width: auto; opacity: 0.7; display: block; margin: 0 auto;" />
+          </a>
         </div>
       </div>
     `;
