@@ -167,7 +167,7 @@ export async function sendRealEmail(
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://entrypass.sociup.in";
     // Always use the public production URL for the logo to avoid broken images in email clients when testing locally
-    const logoUrl = "https://entrypass.sociup.in/ticket-branding/BACKUP-S-C.png";
+    const logoUrl = "https://entrypass.sociup.in/ticket-branding/sidebar-new.png";
 
     const htmlWithFooter = `
       <div style="font-family: system-ui, -apple-system, sans-serif; color: #1f2937; max-width: 600px; margin: 0 auto; line-height: 1.5;">
